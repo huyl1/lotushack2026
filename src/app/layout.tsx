@@ -18,6 +18,7 @@ const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
+
 export const metadata: Metadata = {
   title: "Edify",
   description: "AI-powered university matching for education consultants",

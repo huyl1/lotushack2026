@@ -147,27 +147,61 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
 
       {/* Header */}
       <div
+        className="relative overflow-hidden"
         style={{
-          background: "var(--color-bg-card)",
-          border: "1px solid var(--color-border)",
+          background: "#0f0f14",
+          border: "1px solid rgba(255,255,255,0.06)",
           borderRadius: "var(--radius-sm)",
-          padding: "var(--space-lg)",
         }}
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "var(--font-display)", color: "var(--color-text-primary)", margin: 0 }}>
-              Recommendation Report
-            </h1>
-            <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-secondary)" }}>
-              {student.name} · {stateDate}
-            </span>
-          </div>
+        {/* Gradient background */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #1a1a2e 100%)",
+          }}
+        />
+
+        {/* Content */}
+        <div
+          className="relative z-10 flex items-center"
+          style={{
+            padding: "0 var(--space-lg)",
+            height: 72,
+            gap: "var(--space-md)",
+          }}
+        >
+          <h1
+            className="flex-1"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 24,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "#ffffff",
+              margin: 0,
+              lineHeight: 1.2,
+            }}
+          >
+            Recommendation Report
+          </h1>
+
+          <p
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 15,
+              color: "rgba(255,255,255,0.6)",
+              margin: 0,
+            }}
+          >
+            {student.name} · {stateDate}
+          </p>
+
           <div className="flex items-center" style={{ gap: 8 }}>
             {snapshotParts.map((p) => (
               <span key={p} style={{
                 fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500,
-                color: "var(--color-text-secondary)", background: "var(--color-hover-bg)",
+                color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.08)",
                 padding: "4px 10px", borderRadius: "var(--radius-xs)",
               }}>
                 {p}
