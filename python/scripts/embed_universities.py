@@ -56,39 +56,46 @@ logger = logging.getLogger(__name__)
 # Adjust weights to change which fields dominate the embedding.
 # ---------------------------------------------------------------------------
 UNIVERSITY_FIELDS: list[FieldConfig] = [
-    # Core identity — highest importance
-    FieldConfig("name",                    weight=4.0, label="University"),
-    FieldConfig("country",                 weight=2.0, label="Country"),
-    FieldConfig("region",                  weight=1.5, label="Region"),
-    FieldConfig("qs_rank",                 weight=1.5, label="QS Rank"),
+    # ── Core identity ──────────────────────────────────────────────────
+    FieldConfig("name",                              weight=4.0, label="University"),
+    FieldConfig("country",                           weight=2.0, label="Country"),
+    FieldConfig("qs_rank",                           weight=1.5, label="QS Rank"),
+    FieldConfig("setting",                           weight=0.5, label="Campus Setting"),
+    FieldConfig("size_category",                     weight=0.5, label="Size"),
 
-    # Academic character
-    FieldConfig("focus",                   weight=2.0, label="Academic Focus"),
-    FieldConfig("research",                weight=2.0, label="Research Strengths"),
-    FieldConfig("setting",                 weight=0.5, label="Campus Setting"),
-    FieldConfig("size_category",           weight=0.5, label="Size"),
+    # ── Admissions selectivity ─────────────────────────────────────────
+    FieldConfig("overall_acceptance_rate",           weight=3.0, label="Acceptance Rate"),
+    FieldConfig("selectivity_trend",                 weight=1.5, label="Selectivity Trend"),
+    FieldConfig("acceptance_rate_by_round",          weight=1.5, label="Acceptance Rate by Round"),
+    FieldConfig("program_specific_acceptance_rate",  weight=1.5, label="Program Acceptance Rate"),
+    FieldConfig("acceptance_rate_by_residency",      weight=1.0, label="Acceptance Rate by Residency"),
+    FieldConfig("major_impaction_signals",           weight=1.0, label="Major Impaction"),
 
-    # Admissions
-    FieldConfig("overall_acceptance_rate", weight=2.0, label="Acceptance Rate"),
-    FieldConfig("test_policy",             weight=1.5, label="Test Policy"),
-    FieldConfig("deadline_calendar",       weight=1.0, label="Application Deadline"),
-    FieldConfig("financial_aid",           weight=1.0, label="Financial Aid"),
+    # ── Admitted student profile ───────────────────────────────────────
+    FieldConfig("admitted_gpa_percentiles",          weight=2.5, label="Admitted GPA"),
+    FieldConfig("admitted_sat_act_percentiles",      weight=2.5, label="Admitted SAT/ACT"),
+    FieldConfig("class_profile_composition",         weight=1.5, label="Class Profile"),
 
-    # Financials
-    FieldConfig("tuition_usd",             weight=1.0, label="Tuition USD"),
+    # ── Test & entry requirements ──────────────────────────────────────
+    FieldConfig("test_policy",                       weight=2.5, label="Test Policy"),
+    FieldConfig("english_test_requirements",         weight=1.5, label="English Test Requirements"),
+    FieldConfig("application_pathways_eligibility",  weight=1.5, label="Application Pathways"),
+    FieldConfig("program_supplemental_requirements", weight=1.0, label="Supplemental Requirements"),
 
-    # QS sub-scores (lower individual weight; collectively informative)
-    FieldConfig("overall_score",           weight=1.5, label="Overall QS Score"),
-    FieldConfig("ar_score",                weight=1.0, label="Academic Reputation Score"),
-    FieldConfig("er_score",                weight=1.0, label="Employer Reputation Score"),
-    FieldConfig("fsr_score",               weight=0.5, label="Faculty Student Ratio Score"),
-    FieldConfig("cpf_score",               weight=0.5, label="Citations per Faculty Score"),
-    FieldConfig("ifr_score",               weight=0.5, label="International Faculty Score"),
-    FieldConfig("isr_score",               weight=0.5, label="International Students Score"),
-    FieldConfig("isd_score",               weight=0.5, label="International Research Score"),
-    FieldConfig("irn_score",               weight=0.5, label="Int'l Research Network Score"),
-    FieldConfig("eo_score",                weight=0.5, label="Employment Outcomes Score"),
-    FieldConfig("sus_score",               weight=0.5, label="Sustainability Score"),
+    # ── Timeline / deadlines ───────────────────────────────────────────
+    FieldConfig("deadline_calendar",                 weight=2.0, label="Application Deadline"),
+    FieldConfig("scholarship_deadlines_eligibility", weight=1.5, label="Scholarship Deadlines"),
+
+    # ── Financials ─────────────────────────────────────────────────────
+    FieldConfig("tuition_usd",                       weight=3.0, label="Tuition (USD)"),
+    FieldConfig("tuition_fees",                      weight=2.0, label="Tuition & Fees Detail"),
+    FieldConfig("need_policy",                       weight=2.5, label="Financial Aid Need Policy"),
+    FieldConfig("average_aid_merit_statistics",      weight=2.0, label="Aid & Merit Statistics"),
+
+    # ── Post-admission signals ─────────────────────────────────────────
+    FieldConfig("yield_rate",                        weight=1.0, label="Yield Rate"),
+    FieldConfig("transfer_deferred_entry_options",   weight=1.0, label="Transfer & Deferral Options"),
+    FieldConfig("deferral_waitlist_indicators",      weight=0.5, label="Deferral / Waitlist"),
 ]
 
 
