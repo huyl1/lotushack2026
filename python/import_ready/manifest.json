@@ -1,0 +1,61 @@
+{
+  "source": "/Users/tunguyen/lotushack2026/python/output/qs_top250_admissions_params.jsonl",
+  "universities_count": 7,
+  "majors_count": 70,
+  "files": {
+    "universities_jsonl": "/Users/tunguyen/lotushack2026/python/import_ready/universities.jsonl",
+    "majors_jsonl": "/Users/tunguyen/lotushack2026/python/import_ready/majors.jsonl",
+    "universities_csv": "/Users/tunguyen/lotushack2026/python/import_ready/universities.csv",
+    "majors_csv": "/Users/tunguyen/lotushack2026/python/import_ready/majors.csv"
+  },
+  "university_columns": [
+    "id",
+    "name",
+    "country",
+    "qs_rank",
+    "website_url",
+    "setting",
+    "size_category",
+    "ranking_year",
+    "top10_topic",
+    "scraped_at",
+    "search_embedding",
+    "tuition_usd",
+    "overall_acceptance_rate",
+    "test_policy",
+    "english_test_requirements",
+    "application_pathways_eligibility",
+    "deadline_calendar",
+    "program_supplemental_requirements",
+    "transfer_deferred_entry_options",
+    "program_specific_acceptance_rate",
+    "acceptance_rate_by_residency",
+    "admitted_gpa_percentiles",
+    "admitted_sat_act_percentiles",
+    "need_policy",
+    "class_profile_composition",
+    "selectivity_trend",
+    "tuition_fees",
+    "scholarship_deadlines_eligibility",
+    "acceptance_rate_by_round",
+    "major_impaction_signals",
+    "average_aid_merit_statistics",
+    "yield_rate",
+    "deferral_waitlist_indicators"
+  ],
+  "major_columns": [
+    "id",
+    "university_id",
+    "major_name",
+    "degree_type",
+    "ranking_within_school",
+    "source_url",
+    "scraped_at"
+  ],
+  "notes": [
+    "universities.id and majors.id are deterministic uuid5 values for stable re-imports.",
+    "Empty CSV cells mean NULL for text; tuition_usd empty means NULL.",
+    "search_embedding is null in JSONL/CSV; set via app or SQL later.",
+    "created_at/updated_at on universities use DB defaults on INSERT."
+  ]
+}
