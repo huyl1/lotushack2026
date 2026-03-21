@@ -71,7 +71,7 @@ export function PanelActionQueue({ students }: PanelActionQueueProps) {
                   style={{
                     width: 32, height: 32, borderRadius: "var(--radius-full)",
                     background: "var(--color-hover-bg-strong)",
-                    fontSize: 12, fontWeight: 600, fontFamily: "var(--font-sans)",
+                    fontSize: 14, fontWeight: 600, fontFamily: "var(--font-sans)",
                     color: "var(--color-text-secondary)",
                   }}
                 >
@@ -81,11 +81,11 @@ export function PanelActionQueue({ students }: PanelActionQueueProps) {
                 {/* Name + meta */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center" style={{ gap: 6 }}>
-                    <span className="truncate" style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" }}>
+                    <span className="truncate" style={{ fontSize: 14, fontWeight: 500, color: "var(--color-text-primary)" }}>
                       {student.name}
                     </span>
                   </div>
-                  <span style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
+                  <span style={{ fontSize: 14, color: "var(--color-text-muted)" }}>
                     Updated {relativeTime(latestDate)}
                   </span>
                 </div>
@@ -94,7 +94,7 @@ export function PanelActionQueue({ students }: PanelActionQueueProps) {
                 <span
                   className="shrink-0"
                   style={{
-                    fontSize: 11, fontWeight: 500, fontFamily: "var(--font-sans)",
+                    fontSize: 14, fontWeight: 500, fontFamily: "var(--font-sans)",
                     color: "var(--color-accent)", background: "var(--color-hover-bg)",
                     padding: "2px 8px", borderRadius: "var(--radius-xs)",
                   }}

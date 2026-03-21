@@ -10,13 +10,13 @@ interface ScoreTimelineProps {
 }
 
 type View = "chart" | "snapshots";
-type Metric = "SAT" | "ACT" | "GPA" | "IELTS";
+type Metric = "All" | "SAT" | "ACT" | "GPA" | "IELTS";
 
 const TOOLTIP_STYLE = {
   background: "#ffffff",
   border: "1px solid #e2e0d9",
   borderRadius: 8,
-  fontSize: 12,
+  fontSize: 14,
   fontFamily: "var(--font-sans)",
   color: "#1a1a1a",
   padding: "6px 10px",
@@ -29,7 +29,7 @@ function DiffIndicator({ prev, curr }: { prev: number | null; curr: number | nul
   if (diff === 0) return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
   const isUp = diff > 0;
   return (
-    <span style={{ fontSize: 11, fontWeight: 600, color: isUp ? "var(--color-stage-matched)" : "var(--color-destructive)" }}>
+    <span style={{ fontSize: 14, fontWeight: 600, color: isUp ? "var(--color-stage-matched)" : "var(--color-destructive)" }}>
       {isUp ? "▲" : "▼"} {Math.abs(diff) % 1 !== 0 ? Math.abs(diff).toFixed(1) : Math.abs(diff)}
     </span>
   );
@@ -37,7 +37,7 @@ function DiffIndicator({ prev, curr }: { prev: number | null; curr: number | nul
 
 export function ScoreTimeline({ states }: ScoreTimelineProps) {
   const [view, setView] = useState<View>("chart");
-  const [metric, setMetric] = useState<Metric>("SAT");
+  const [metric, setMetric] = useState<Metric>("All");
 
   const chartData = useMemo(() => {
     return states.map((s) => ({
@@ -49,20 +49,29 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
     }));
   }, [states]);
 
-  const yDomain: Record<Metric, [number | string, number | string]> = {
+  const yDomain: Record<string, [number | string, number | string]> = {
     SAT: ["auto", "auto"],
     ACT: [15, 36],
     GPA: [0, 4.0],
     IELTS: [4.0, 9.0],
   };
 
-  const hasChartData = chartData.some((d) => d[metric] != null);
+  const LINES: { key: "SAT" | "ACT" | "GPA" | "IELTS"; color: string }[] = [
+    { key: "SAT", color: "#6366f1" },
+    { key: "ACT", color: "#f59e0b" },
+    { key: "GPA", color: "#10b981" },
+    { key: "IELTS", color: "#8b5cf6" },
+  ];
+
+  const hasChartData = metric === "All"
+    ? chartData.some((d) => d.SAT != null || d.ACT != null || d.GPA != null || d.IELTS != null)
+    : chartData.some((d) => d[metric] != null);
 
   return (
     <Panel
       title="Score Progression"
       dotColor="var(--color-stage-building)"
-      tabs={view === "chart" ? ["Chart", "Snapshots", "—", "SAT", "ACT", "GPA", "IELTS"] : ["Chart", "Snapshots"]}
+      tabs={view === "chart" ? ["Chart", "Snapshots", "—", "All", "SAT", "ACT", "GPA", "IELTS"] : ["Chart", "Snapshots"]}
       activeTab={view === "chart" ? metric : "Snapshots"}
       onTabChange={(t) => {
         if (t === "Chart") { setView("chart"); return; }
@@ -71,7 +80,7 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
         setMetric(t as Metric); setView("chart");
       }}
       footer={
-        <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}>
           {states.length} {states.length === 1 ? "snapshot" : "snapshots"} recorded
         </span>
       }
@@ -86,31 +95,66 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
         ) : (
           <div style={{ width: "100%", flex: 1, minHeight: 0 }}>
             <ResponsiveContainer>
-              <LineChart data={chartData} margin={{ top: 8, right: 32, bottom: 8, left: -8 }}>
-                <CartesianGrid stroke="#ece9e1" strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 12, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
-                  axisLine={{ stroke: "#c4c1b9" }}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
-                  axisLine={{ stroke: "#c4c1b9" }}
-                  tickLine={false}
-                  domain={yDomain[metric]}
-                />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Line
-                  type="monotone"
-                  dataKey={metric}
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  dot={{ fill: "#6366f1", r: 4, strokeWidth: 0 }}
-                  activeDot={{ r: 6, strokeWidth: 2, stroke: "#fff" }}
-                  connectNulls
-                />
-              </LineChart>
+              {metric === "All" ? (
+                <LineChart data={chartData} margin={{ top: 8, right: 32, bottom: 8, left: -8 }}>
+                  <CartesianGrid stroke="#ece9e1" strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 14, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
+                    axisLine={{ stroke: "#c4c1b9" }}
+                    tickLine={false}
+                  />
+                  <YAxis hide />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  {LINES.map(({ key, color }) => (
+                    chartData.some((d) => d[key] != null) && (
+                      <Line
+                        key={key}
+                        type="monotone"
+                        dataKey={key}
+                        name={key}
+                        stroke={color}
+                        strokeWidth={2}
+                        dot={{ fill: color, r: 3, strokeWidth: 0 }}
+                        activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                        connectNulls
+                        yAxisId={key}
+                      />
+                    )
+                  ))}
+                  {/* Separate Y axes (hidden) so different scales don't conflict */}
+                  <YAxis yAxisId="SAT" hide domain={["auto", "auto"]} />
+                  <YAxis yAxisId="ACT" hide domain={[15, 36]} />
+                  <YAxis yAxisId="GPA" hide domain={[0, 4.0]} />
+                  <YAxis yAxisId="IELTS" hide domain={[4.0, 9.0]} />
+                </LineChart>
+              ) : (
+                <LineChart data={chartData} margin={{ top: 8, right: 32, bottom: 8, left: -8 }}>
+                  <CartesianGrid stroke="#ece9e1" strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 14, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
+                    axisLine={{ stroke: "#c4c1b9" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 14, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
+                    axisLine={{ stroke: "#c4c1b9" }}
+                    tickLine={false}
+                    domain={yDomain[metric]}
+                  />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Line
+                    type="monotone"
+                    dataKey={metric}
+                    stroke={LINES.find((l) => l.key === metric)?.color ?? "#6366f1"}
+                    strokeWidth={2}
+                    dot={{ fill: LINES.find((l) => l.key === metric)?.color ?? "#6366f1", r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 6, strokeWidth: 2, stroke: "#fff" }}
+                    connectNulls
+                  />
+                </LineChart>
+              )}
             </ResponsiveContainer>
           </div>
         )
@@ -133,7 +177,7 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
               }}
             >
               {["Date", "SAT", "", "ACT", "", "GPA", "", "IELTS", ""].map((col, i) => (
-                <span key={i} style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", textTransform: "uppercase" }}>
+                <span key={i} style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", textTransform: "uppercase" }}>
                   {col}
                 </span>
               ))}
@@ -151,22 +195,22 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
                     borderBottom: idx < states.length - 1 ? "1px solid var(--color-border-subtle)" : "none",
                   }}
                 >
-                  <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-secondary)" }}>
                     {new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })}
                   </span>
-                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.sat_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.sat_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
                     {s.sat_score ?? "—"}
                   </span>
                   <DiffIndicator prev={prev?.sat_score ?? null} curr={s.sat_score} />
-                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.act_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.act_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
                     {s.act_score ?? "—"}
                   </span>
                   <DiffIndicator prev={prev?.act_score ?? null} curr={s.act_score} />
-                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.gpa ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.gpa ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
                     {s.gpa != null ? Number(s.gpa).toFixed(2) : "—"}
                   </span>
                   <DiffIndicator prev={prev?.gpa ? Number(prev.gpa) : null} curr={s.gpa ? Number(s.gpa) : null} />
-                  <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.ielts_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 500, color: s.ielts_score ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
                     {s.ielts_score != null ? Number(s.ielts_score).toFixed(1) : "—"}
                   </span>
                   <DiffIndicator prev={prev?.ielts_score ? Number(prev.ielts_score) : null} curr={s.ielts_score ? Number(s.ielts_score) : null} />

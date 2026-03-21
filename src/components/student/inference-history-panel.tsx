@@ -29,7 +29,7 @@ export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHis
       title="Matching Reports"
       dotColor="var(--color-stage-matched)"
       footer={
-        <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
           {inferenceRuns.length} {inferenceRuns.length === 1 ? "report" : "reports"} generated
         </span>
       }
@@ -81,7 +81,7 @@ export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHis
                 style={{
                   width: 36, height: 36, borderRadius: "var(--radius-xs)",
                   background: index === 0 ? "var(--color-stage-matched-dim)" : "var(--color-hover-bg)",
-                  fontSize: 14, fontWeight: 700, fontFamily: "var(--font-mono)",
+                  fontSize: 15, fontWeight: 700, fontFamily: "var(--font-mono)",
                   color: index === 0 ? "var(--color-stage-matched)" : "var(--color-text-muted)",
                 }}
               >
@@ -91,12 +91,12 @@ export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHis
               {/* Details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center" style={{ gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)" }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)" }}>
                     {formatDate(run.created_at)}
                   </span>
                   {index === 0 && (
                     <span style={{
-                      fontSize: 10, fontWeight: 600, fontFamily: "var(--font-sans)",
+                      fontSize: 11, fontWeight: 600, fontFamily: "var(--font-sans)",
                       color: "var(--color-stage-matched)", background: "var(--color-stage-matched-dim)",
                       padding: "1px 6px", borderRadius: "var(--radius-xs)", textTransform: "uppercase", letterSpacing: "0.05em",
                     }}>
@@ -104,14 +104,14 @@ export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHis
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+                <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
                   {formatScores(run)}
                 </span>
               </div>
 
               {/* Rec count + arrow */}
               <div className="flex items-center shrink-0" style={{ gap: 8 }}>
-                <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+                <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
                   {run.rec_count} recs
                 </span>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

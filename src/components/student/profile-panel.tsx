@@ -16,10 +16,10 @@ function ScoreItem({ label, value }: { label: string; value: string | number | n
   const hasValue = value != null;
   return (
     <div className="flex flex-col" style={{ gap: 2 }}>
-      <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {label}
       </span>
-      <span style={{ fontSize: 20, fontFamily: "var(--font-mono)", fontWeight: 600, color: hasValue ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+      <span style={{ fontSize: 22, fontFamily: "var(--font-mono)", fontWeight: 600, color: hasValue ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
         {display}
       </span>
     </div>
@@ -29,8 +29,8 @@ function ScoreItem({ label, value }: { label: string; value: string | number | n
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-1.5" style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
+      <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>{label}</span>
+      <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
     </div>
   );
 }
@@ -41,7 +41,7 @@ function Chip({ children }: { children: React.ReactNode }) {
       style={{
         display: "inline-flex",
         padding: "3px 10px",
-        fontSize: 12,
+        fontSize: 15,
         fontFamily: "var(--font-sans)",
         fontWeight: 500,
         color: "var(--color-text-secondary)",
@@ -57,16 +57,16 @@ function Chip({ children }: { children: React.ReactNode }) {
 function PreferenceRow({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <div className="flex items-center py-1.5" style={{ gap: 8, borderBottom: "1px solid var(--color-border-subtle)" }}>
-      <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{icon}</span>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", minWidth: 60 }}>{label}</span>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
+      <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>{icon}</span>
+      <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", minWidth: 60 }}>{label}</span>
+      <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
     </div>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+    <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
       {children}
     </span>
   );
@@ -105,7 +105,7 @@ export function ProfilePanel({ state, tags }: ProfilePanelProps) {
       activeTab={tab === "scores" ? "Scores" : tab === "preferences" ? "Preferences" : "Tags"}
       onTabChange={(t) => setTab(t === "Scores" ? "scores" : t === "Preferences" ? "preferences" : "tags")}
       footer={
-        <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
           Last updated: {relativeTime(state.created_at)}
         </span>
       }

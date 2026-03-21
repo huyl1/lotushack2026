@@ -25,13 +25,13 @@ function MiniScore({ label, score }: { label: string; score: number }) {
 
   return (
     <div className="flex items-center" style={{ gap: 4 }}>
-      <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 52, flexShrink: 0 }}>
+      <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 52, flexShrink: 0 }}>
         {label}
       </span>
       <div className="flex-1" style={{ height: 6, borderRadius: 3, background: "var(--color-border)" }}>
         <div style={{ height: "100%", width: `${score}%`, borderRadius: 3, background: color }} />
       </div>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color, width: 20, textAlign: "right", flexShrink: 0 }}>
+      <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color, width: 20, textAlign: "right", flexShrink: 0 }}>
         {score}
       </span>
     </div>
@@ -73,13 +73,13 @@ export function RecommendationCard({ recommendation: rec }: RecommendationCardPr
           className="shrink-0 flex items-center justify-center"
           style={{ width: 40, height: 40, borderRadius: "var(--radius-xs)", background: bg }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, fontFamily: "var(--font-mono)", color: fg }}>
+          <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "var(--font-mono)", color: fg }}>
             {composite}
           </span>
         </div>
         <span
           className="flex-1"
-          style={{ fontSize: 13, fontWeight: 600, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", lineHeight: 1.3, paddingTop: 2 }}
+          style={{ fontSize: 14, fontWeight: 600, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", lineHeight: 1.3, paddingTop: 2 }}
         >
           {u?.name ?? "Unknown University"}
         </span>
@@ -87,10 +87,10 @@ export function RecommendationCard({ recommendation: rec }: RecommendationCardPr
 
       {/* Info lines */}
       <div className="px-3 pb-2 flex flex-col" style={{ gap: 2 }}>
-        <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
           {[u?.qs_rank ? `Rank #${u.qs_rank}` : null, u?.country].filter(Boolean).join("  ·  ") || "—"}
         </span>
-        <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
           {[acceptanceShort ? `AR ${acceptanceShort}` : null, u?.tuition_usd ? `Fee $${Math.round(u.tuition_usd / 1000)}k/yr` : null].filter(Boolean).join("  ·  ") || "—"}
         </span>
       </div>

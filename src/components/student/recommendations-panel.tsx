@@ -59,7 +59,7 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
             onClick={() => setFilter(f.key)}
             className="px-2.5 py-1 cursor-pointer transition-colors"
             style={{
-              fontSize: 12,
+              fontSize: 14,
               fontFamily: "var(--font-sans)",
               fontWeight: isActive ? 600 : 400,
               color: isActive ? "var(--color-text-primary)" : "var(--color-text-muted)",
@@ -71,7 +71,7 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
             {f.label}
             <span
               className="ml-1"
-              style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", opacity: 0.7 }}
+              style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", opacity: 0.7 }}
             >
               {count}
             </span>
@@ -95,7 +95,7 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
                 value={basedOnState?.id ?? ""}
                 onChange={(e) => onStateChange?.(e.target.value)}
                 style={{
-                  fontSize: 11,
+                  fontSize: 14,
                   fontFamily: "var(--font-mono)",
                   color: "var(--color-text-secondary)",
                   background: "var(--color-hover-bg)",
@@ -111,13 +111,13 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
               </select>
             )}
             {basedOnState && (!statesWithRecs || statesWithRecs.length <= 1) && (
-              <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+              <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
                 Based on {formatStateLabel(basedOnState)}
               </span>
             )}
           </div>
           <div className="flex items-center" style={{ gap: "var(--space-sm)" }}>
-            <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}>
+            <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}>
               {recs.length} shown
             </span>
             {recommendations.length > 0 && basedOnState && (
@@ -125,7 +125,7 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
                 href={`/students/${studentId}/report/${basedOnState.id}`}
                 className="inline-flex items-center gap-1.5 px-3 py-1 transition-colors"
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   fontFamily: "var(--font-sans)",
                   fontWeight: 600,
                   color: "var(--color-accent)",
@@ -173,7 +173,7 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
         />
       ) : recs.length === 0 ? (
         <div className="flex items-center justify-center py-8">
-          <span style={{ fontSize: 13, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
             No {filter} recommendations
           </span>
         </div>

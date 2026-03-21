@@ -92,7 +92,7 @@ export function PageBanner({
           className="self-start pointer-events-auto"
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: 26,
+            fontSize: 28,
             fontWeight: 700,
             letterSpacing: "-0.01em",
             color: "#ffffff",
@@ -108,7 +108,7 @@ export function PageBanner({
           className="self-start text-right"
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: 13,
+            fontSize: 15,
             color: "rgba(255,255,255,0.5)",
           }}
         >
@@ -120,7 +120,7 @@ export function PageBanner({
           className="self-end"
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: 14,
+            fontSize: 15,
             color: "rgba(255,255,255,0.6)",
             margin: 0,
           }}
@@ -133,7 +133,7 @@ export function PageBanner({
           className="self-end text-right"
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: 12,
+            fontSize: 15,
             color: "rgba(255,255,255,0.4)",
           }}
         >
