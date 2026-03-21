@@ -109,7 +109,7 @@ export function TierBadge({
         background: config.bg,
         color: config.color,
         fontFamily: "var(--font-sans)",
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 600,
         letterSpacing: "0.06em",
         ...style,

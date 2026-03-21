@@ -22,7 +22,7 @@ const TOOLTIP_STYLE = {
   background: "#ffffff",
   border: "1px solid #e2e0d9",
   borderRadius: 8,
-  fontSize: 12,
+  fontSize: 14,
   fontFamily: "var(--font-sans)",
   color: "#1a1a1a",
   padding: "6px 10px",
@@ -74,7 +74,7 @@ export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelinePro
         <span
           key={entry.name}
           className="flex items-center gap-1.5"
-          style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}
+          style={{ fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}
         >
           <span className="rounded-full shrink-0" style={{ width: 6, height: 6, background: entry.color }} />
           {entry.name} ({entry.value})
@@ -88,7 +88,7 @@ export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelinePro
       title="Stage Overview"
       dotColor="var(--color-stage-matched)"
       headerRight={
-        <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+        <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
           {total} total
         </span>
       }
@@ -121,10 +121,10 @@ export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelinePro
         </ResponsiveContainer>
         {/* Center label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span style={{ fontSize: 22, fontFamily: "var(--font-display)", fontWeight: 700, color: "var(--color-text-primary)" }}>
+          <span style={{ fontSize: 24, fontFamily: "var(--font-display)", fontWeight: 700, color: "var(--color-text-primary)" }}>
             {total}
           </span>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
             students
           </span>
         </div>

@@ -27,12 +27,12 @@ export function StatCard({ label, value, subtext, dotColor }: StatCardProps) {
           {label}
         </span>
       </div>
-      <span className="text-mono" style={{ color: "var(--color-text-muted)", fontSize: 11 }}>
+      <span className="text-mono" style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
         {subtext || "\u00A0"}
       </span>
       <span
         style={{
-          fontSize: 36,
+          fontSize: 40,
           fontWeight: 700,
           fontFamily: "var(--font-display)",
           color: dotColor || "var(--color-text-primary)",

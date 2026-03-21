@@ -83,7 +83,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
             {tab.label}
             <span
               className="ml-1 text-mono"
-              style={{ fontSize: 12, color: isActive ? "var(--color-text-secondary)" : "var(--color-text-muted)", opacity: 0.7 }}
+              style={{ fontSize: 14, color: isActive ? "var(--color-text-secondary)" : "var(--color-text-muted)", opacity: 0.7 }}
             >
               {count}
             </span>
@@ -110,7 +110,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
               border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: "var(--radius-xs)",
               fontFamily: "var(--font-sans)",
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               textDecoration: "none",
             }}
@@ -198,7 +198,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
                 <span
                   key={col}
                   className="text-caption uppercase"
-                  style={{ color: "var(--color-text-muted)", letterSpacing: "0.06em", fontSize: 12, textAlign: col === "Name" ? "left" : "right" }}
+                  style={{ color: "var(--color-text-muted)", letterSpacing: "0.06em", fontSize: 14, textAlign: col === "Name" ? "left" : "right" }}
                 >
                   {col}
                 </span>
@@ -229,7 +229,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
                       style={{
                         width: 28, height: 28, borderRadius: "var(--radius-full)",
                         background: "var(--color-hover-bg-strong)",
-                        fontSize: 11, fontWeight: 600, fontFamily: "var(--font-sans)",
+                        fontSize: 14, fontWeight: 600, fontFamily: "var(--font-sans)",
                         color: "var(--color-text-secondary)",
                       }}
                     >

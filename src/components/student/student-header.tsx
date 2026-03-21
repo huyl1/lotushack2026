@@ -40,7 +40,7 @@ export function StudentBanner({ student }: StudentHeaderProps) {
               border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: "var(--radius-xs)",
               fontFamily: "var(--font-sans)",
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               textDecoration: "none",
             }}
