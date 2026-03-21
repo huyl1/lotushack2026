@@ -105,7 +105,7 @@ export function PageGrid({
         rowHeight={32}
         margin={[16, 16]}
         containerPadding={[0, 0]}
-        draggableCancel=".panel-content, .panel-footer"
+        isDraggable={false}
         isResizable={isResizable}
         onDragStop={(_layout: readonly LayoutItem[]) =>
           saveLayout([..._layout])

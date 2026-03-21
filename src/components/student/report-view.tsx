@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { TierBadge } from "@/components/ui/badges";
+import { useBreadcrumb } from "@/lib/context/breadcrumb";
 import type { Student, StudentState, Recommendation, Tier } from "@/lib/supabase/types";
 
 interface ReportViewProps {
@@ -11,28 +12,39 @@ interface ReportViewProps {
   recommendations: Recommendation[];
 }
 
-const SCORE_LABELS: { key: keyof Pick<Recommendation, "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance">; label: string; weight: string }[] = [
-  { key: "academic_alignment", label: "Academic Alignment", weight: "35%" },
-  { key: "financial_sustainability", label: "Financial Sustainability", weight: "25%" },
-  { key: "student_success", label: "Student Success", weight: "15%" },
-  { key: "lifestyle_culture", label: "Lifestyle & Culture", weight: "15%" },
-  { key: "admission_chance", label: "Admission Chance", weight: "10%" },
+const SCORE_LABELS: { key: keyof Pick<Recommendation, "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance">; label: string }[] = [
+  { key: "academic_alignment", label: "Academic Alignment" },
+  { key: "financial_sustainability", label: "Financial Sustainability" },
+  { key: "student_success", label: "Student Success" },
+  { key: "lifestyle_culture", label: "Lifestyle & Culture" },
+  { key: "admission_chance", label: "Admission Chance" },
 ];
 
 const TIER_ORDER: Tier[] = ["reach", "match", "safety"];
 
-function ScoreBar({ label, weight, score }: { label: string; weight: string; score: number }) {
-  let color = "var(--color-text-muted)";
-  if (score >= 90) color = "var(--color-stage-matched)";
-  else if (score >= 70) color = "var(--color-stage-new)";
-  else if (score >= 50) color = "var(--color-warning)";
+const TIER_COLORS: Record<Tier, { color: string; bg: string }> = {
+  reach: { color: "var(--color-tier-reach)", bg: "var(--color-tier-reach-dim)" },
+  match: { color: "var(--color-tier-match)", bg: "var(--color-tier-match-dim)" },
+  safety: { color: "var(--color-tier-safety)", bg: "var(--color-tier-safety-dim)" },
+};
+
+function scoreColor(score: number): string {
+  // Interpolate from red (0) → yellow (50) → green (100)
+  const r = score < 50 ? 220 : Math.round(220 - (score - 50) * 3.6);
+  const g = score < 50 ? Math.round(60 + score * 3.2) : 220;
+  const b = score < 50 ? 50 : Math.round(50 + (score - 50) * 0.6);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function ScoreBar({ label, score }: { label: string; score: number }) {
+  const color = scoreColor(score);
 
   return (
     <div className="flex items-center" style={{ gap: 10 }}>
       <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 180, flexShrink: 0 }}>
-        {label} <span style={{ fontSize: 12, opacity: 0.6 }}>({weight})</span>
+        {label}
       </span>
-      <div className="flex-1" style={{ height: 10, borderRadius: 5, background: "var(--color-border)" }}>
+      <div className="flex-1" style={{ height: 10, borderRadius: 5, background: "var(--color-border)", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${score}%`, borderRadius: 5, background: color, transition: "width 0.3s ease" }} />
       </div>
       <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", fontWeight: 600, color, width: 32, textAlign: "right", flexShrink: 0 }}>
@@ -75,7 +87,6 @@ function NavItem({ rec, isActive, onClick }: { rec: Recommendation; isActive: bo
         <span className="block truncate" style={{ fontSize: 13, fontWeight: isActive ? 600 : 500, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)" }}>
           {u?.name ?? "Unknown"}
         </span>
-        <TierBadge tier={rec.match_category} />
       </div>
     </button>
   );
@@ -83,6 +94,11 @@ function NavItem({ rec, isActive, onClick }: { rec: Recommendation; isActive: bo
 
 export function ReportView({ student, state, recommendations }: ReportViewProps) {
   const [selectedId, setSelectedId] = useState<string>(recommendations[0]?.id ?? "");
+  const [collapsedTiers, setCollapsedTiers] = useState<Set<Tier>>(new Set());
+  const { setDynamicLabel } = useBreadcrumb();
+  useEffect(() => {
+    setDynamicLabel(student.id, student.name);
+  }, [student.id, student.name, setDynamicLabel]);
 
   const stateDate = new Date(state.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -172,21 +188,37 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
             borderRadius: "var(--radius-sm)",
           }}
         >
-          {TIER_ORDER.map((tier) => (
-            grouped[tier].length > 0 && (
+          {TIER_ORDER.map((tier) => {
+            if (grouped[tier].length === 0) return null;
+            const isCollapsed = collapsedTiers.has(tier);
+            const tierColor = TIER_COLORS[tier];
+            return (
               <div key={tier}>
-                <div
+                <button
+                  onClick={() => setCollapsedTiers((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(tier)) next.delete(tier); else next.add(tier);
+                    return next;
+                  })}
+                  className="flex items-center justify-between w-full"
                   style={{
                     padding: "8px 14px",
                     fontSize: 11, fontWeight: 600, fontFamily: "var(--font-sans)",
-                    color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em",
-                    background: "var(--color-bg-wash)",
-                    borderBottom: "1px solid var(--color-border-subtle)",
+                    color: tierColor.color, textTransform: "uppercase", letterSpacing: "0.08em",
+                    background: tierColor.bg,
+                    border: "none", borderBottomStyle: "solid", borderBottomWidth: 1, borderBottomColor: "var(--color-border-subtle)",
+                    cursor: "pointer",
                   }}
                 >
-                  {tier} ({grouped[tier].length})
-                </div>
-                {grouped[tier].map((rec) => (
+                  <span>{tier} ({grouped[tier].length})</span>
+                  <svg
+                    width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transition: "transform 0.15s", transform: isCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
+                  >
+                    <path d="M3 4.5L6 7.5L9 4.5" />
+                  </svg>
+                </button>
+                {!isCollapsed && grouped[tier].map((rec) => (
                   <NavItem
                     key={rec.id}
                     rec={rec}
@@ -195,8 +227,8 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
                   />
                 ))}
               </div>
-            )
-          ))}
+            );
+          })}
         </div>
 
         {/* Detail panel */}
@@ -273,8 +305,8 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
               Score Breakdown
             </h3>
             <div className="flex flex-col" style={{ gap: 10 }}>
-              {SCORE_LABELS.map(({ key, label, weight }) => (
-                <ScoreBar key={key} label={label} weight={weight} score={Number(selected[key] ?? 0)} />
+              {SCORE_LABELS.map(({ key, label }) => (
+                <ScoreBar key={key} label={label} score={Number(selected[key] ?? 0)} />
               ))}
             </div>
           </div>

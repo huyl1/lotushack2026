@@ -9,6 +9,8 @@ import type { StudentState, Tag } from "@/lib/supabase/types";
 interface ProfilePanelProps {
   state: StudentState | null;
   tags: Tag[];
+  grade?: string | null;
+  dob?: string | null;
 }
 
 function ScoreItem({ label, value }: { label: string; value: string | number | null }) {
@@ -72,7 +74,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ProfilePanel({ state, tags }: ProfilePanelProps) {
+export function ProfilePanel({ state, tags, grade, dob }: ProfilePanelProps) {
   const [tab, setTab] = useState<"scores" | "preferences" | "tags">("scores");
 
   const groupedTags = useMemo(() => {
@@ -101,12 +103,12 @@ export function ProfilePanel({ state, tags }: ProfilePanelProps) {
     <Panel
       title="Student Profile"
       dotColor="var(--color-accent)"
-      tabs={["Scores", "Preferences", "Tags"]}
-      activeTab={tab === "scores" ? "Scores" : tab === "preferences" ? "Preferences" : "Tags"}
-      onTabChange={(t) => setTab(t === "Scores" ? "scores" : t === "Preferences" ? "preferences" : "tags")}
+      tabs={["Scores", "Preferences"]}
+      activeTab={tab === "scores" ? "Scores" : "Preferences"}
+      onTabChange={(t) => setTab(t === "Scores" ? "scores" : "preferences")}
       footer={
         <span style={{ fontSize: 15, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
-          Last updated: {relativeTime(state.created_at)}
+          Latest snapshot: {new Date(state.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })} ({relativeTime(state.created_at)})
         </span>
       }
     >
@@ -115,7 +117,7 @@ export function ProfilePanel({ state, tags }: ProfilePanelProps) {
           {/* Test Scores */}
           <div>
             <SectionLabel>Test Scores</SectionLabel>
-            <div className="grid mt-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-sm)" }}>
+            <div className="grid mt-2" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "var(--space-sm)" }}>
               <ScoreItem label="SAT" value={state.sat_score} />
               <ScoreItem label="ACT" value={state.act_score} />
               <ScoreItem label="GPA" value={state.gpa != null ? Number(state.gpa).toFixed(2) : null} />
@@ -126,7 +128,9 @@ export function ProfilePanel({ state, tags }: ProfilePanelProps) {
           {/* Application Details */}
           <div className="flex flex-col">
             <SectionLabel>Application</SectionLabel>
-            <div style={{ marginTop: 4 }}>
+            <div className="grid mt-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "0 var(--space-md)" }}>
+              <InfoRow label="Grade" value={grade ?? "—"} />
+              <InfoRow label="Date of Birth" value={dob ? new Date(dob).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"} />
               <InfoRow label="Round" value={state.application_round ?? "—"} />
               <InfoRow label="Budget" value={state.budget_usd != null ? `$${Math.round(Number(state.budget_usd) / 1000)}k/year` : "—"} />
               <InfoRow label="Financial Aid" value={state.needs_financial_aid ? "Yes" : state.needs_financial_aid === false ? "No" : "—"} />

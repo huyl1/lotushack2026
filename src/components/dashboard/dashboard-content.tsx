@@ -10,6 +10,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { PageBanner } from "@/components/ui/page-banner";
 import { PanelActionQueue } from "./panel-action-queue";
 import { PanelStagePipeline } from "./panel-stage-pipeline";
+import { NewStudentDialog } from "./new-student-dialog";
 import { relativeTime } from "@/lib/utils/time";
 import type { StudentWithLatestState } from "@/lib/supabase/types";
 
@@ -41,8 +42,16 @@ function formatCountries(countries: string[] | null): string {
   return `${countries[0]}, ${countries[1]} +${countries.length - 2}`;
 }
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export function DashboardContent({ students, stats }: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [newStudentOpen, setNewStudentOpen] = useState(false);
 
   const filteredStudents = useMemo(() => {
     const filtered =
@@ -96,12 +105,13 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
   return (
     <div className="flex flex-col" style={{ gap: "var(--space-md)", padding: "var(--space-md)" }}>
       {/* Banner */}
+      <div style={{ height: 80 }}>
       <PageBanner
-        title="Dashboard"
-        subtitle={`${stats.total} students across your caseload`}
+        title="How would you like to consult today?"
+        subtitle=""
         primaryMeta={
-          <Link
-            href="/students/new"
+          <button
+            onClick={() => setNewStudentOpen(true)}
             className="inline-flex items-center gap-2 px-4 h-9 transition-colors pointer-events-auto"
             style={{
               background: "rgba(255,255,255,0.15)",
@@ -112,16 +122,17 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
               fontFamily: "var(--font-sans)",
               fontSize: 14,
               fontWeight: 600,
-              textDecoration: "none",
+              cursor: "pointer",
             }}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M6 1v10M1 6h10" />
             </svg>
             New Student
-          </Link>
+          </button>
         }
       />
+      </div>
 
       {/* Stats Row */}
       <SectionHeader title="Overview" />
@@ -145,6 +156,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
         dotColor="var(--color-accent)"
         headerRight={filterTabs}
         noPadding
+        style={{ minHeight: 280 }}
         footer={
           <span>
             {activeCount} {activeCount === 1 ? "student" : "students"}
@@ -266,6 +278,8 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
           </div>
         )}
       </Panel>
+
+      <NewStudentDialog open={newStudentOpen} onClose={() => setNewStudentOpen(false)} />
     </div>
   );
 }

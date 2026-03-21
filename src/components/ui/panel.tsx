@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useRef, useState, useEffect, useCallback } from "react";
+import { type ReactNode, useRef, useState, useEffect, useCallback, type CSSProperties } from "react";
 
 interface TabGroup {
   tabs: string[];
@@ -18,6 +18,7 @@ interface PanelProps {
   headerRight?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  style?: CSSProperties;
   contentClassName?: string;
   noPadding?: boolean;
   children?: ReactNode;
@@ -33,6 +34,7 @@ export function Panel({
   headerRight,
   footer,
   className = "",
+  style,
   contentClassName = "",
   noPadding = false,
   children,
@@ -65,6 +67,7 @@ export function Panel({
         background: "var(--color-bg-card)",
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-sm)",
+        ...style,
       }}
     >
       {/* Header — drag handle */}
@@ -75,7 +78,7 @@ export function Panel({
             padding: "var(--space-sm) var(--space-md)",
             gap: "var(--space-sm)",
             borderBottom: `1px solid ${scrollTop ? "var(--color-hover-border)" : "var(--color-border-subtle)"}`,
-            cursor: "grab",
+
             transition: "border-color var(--duration-default) ease",
           }}
         >

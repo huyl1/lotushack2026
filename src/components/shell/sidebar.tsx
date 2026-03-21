@@ -17,14 +17,45 @@ const navItems = [
       </svg>
     ),
   },
+];
+
+const plannedItems = [
   {
-    label: "New Student",
-    href: "/students/new",
+    label: "Analytics",
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="8" cy="5" r="3" />
-        <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" />
-        <path d="M12 3v4M10 5h4" />
+        <polyline points="1.5,12.5 5.5,7.5 8.5,10 12,4.5 14.5,7" />
+        <path d="M1.5 14.5h13" />
+      </svg>
+    ),
+  },
+  {
+    label: "Documents",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5.5L9.5 1.5z" />
+        <polyline points="9.5,1.5 9.5,5.5 13.5,5.5" />
+        <line x1="5" y1="9" x2="11" y2="9" />
+        <line x1="5" y1="11.5" x2="8.5" y2="11.5" />
+      </svg>
+    ),
+  },
+  {
+    label: "Calendar",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1.5" y="3" width="13" height="11.5" rx="1" />
+        <line x1="1.5" y1="7" x2="14.5" y2="7" />
+        <line x1="5" y1="1.5" x2="5" y2="4.5" />
+        <line x1="11" y1="1.5" x2="11" y2="4.5" />
+      </svg>
+    ),
+  },
+  {
+    label: "Messages",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 9.5a2 2 0 0 1-2 2H5l-3 2.5V3.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6z" />
       </svg>
     ),
   },
@@ -82,18 +113,37 @@ export function Sidebar() {
                 fontWeight: isActive ? 500 : 400,
               }}
             >
-              <span
-                className="shrink-0"
-                style={{
-                  opacity: isActive ? 1 : 0.6,
-                }}
-              >
+              <span className="shrink-0" style={{ opacity: isActive ? 1 : 0.6 }}>
                 {item.icon}
               </span>
               {item.label}
             </Link>
           );
         })}
+
+        {/* Planned features */}
+        <div
+          className="mx-2 mt-3 mb-1 px-3"
+          style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "var(--color-text-muted)", textTransform: "uppercase" }}
+        >
+          Coming soon
+        </div>
+        {plannedItems.map((item) => (
+          <div
+            key={item.label}
+            className="flex items-center gap-3 mx-2 px-3 py-2"
+            style={{
+              color: "var(--color-text-muted)",
+              borderRadius: "var(--radius-xs)",
+              opacity: 0.45,
+              cursor: "default",
+              fontSize: 14,
+            }}
+          >
+            <span className="shrink-0">{item.icon}</span>
+            {item.label}
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}

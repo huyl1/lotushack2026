@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { StudentBanner } from "./student-header";
 import { ProfilePanel } from "./profile-panel";
 import { ScoreTimeline } from "./score-timeline";
 import { InferenceHistoryPanel } from "./inference-history-panel";
+import { useBreadcrumb } from "@/lib/context/breadcrumb";
 import type { StudentDetail as StudentDetailType } from "@/lib/supabase/types";
 
 interface StudentDetailProps {
@@ -12,6 +14,10 @@ interface StudentDetailProps {
 }
 
 export function StudentDetailView({ student }: StudentDetailProps) {
+  const { setDynamicLabel } = useBreadcrumb();
+  useEffect(() => {
+    setDynamicLabel(student.id, student.name);
+  }, [student.id, student.name, setDynamicLabel]);
   const latestState = student.states.length > 0
     ? student.states[student.states.length - 1]
     : null;
@@ -33,9 +39,9 @@ export function StudentDetailView({ student }: StudentDetailProps) {
       {/* Banner */}
       <StudentBanner student={student} />
 
-      {/* Top row: Profile (5w) + Score Progression (7w) */}
-      <div className="grid" style={{ gridTemplateColumns: "5fr 7fr", gap: "var(--space-md)", height: 420 }}>
-        <ProfilePanel state={latestState} tags={student.tags} />
+      {/* Top row: Profile (6w) + Score Progression (4w) */}
+      <div className="grid" style={{ gridTemplateColumns: "6fr 5fr", gap: "var(--space-md)", height: 420 }}>
+        <ProfilePanel state={latestState} tags={student.tags} grade={student.grade} dob={student.dob} />
         <ScoreTimeline states={student.states} />
       </div>
 
