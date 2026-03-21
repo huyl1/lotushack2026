@@ -84,9 +84,6 @@ export interface Major {
   gpa_min: number | null;
   a_level_grades: string | null;
   ib_min: number | null;
-  atar_min: number | null;
-  duolingo_min: number | null;
-  pte_min: number | null;
 }
 
 export interface Tag {
@@ -103,6 +100,23 @@ export interface Tag {
    ============================================================ */
 
 export type Tier = "reach" | "match" | "safety";
+
+export interface ScoreSection {
+  score: number;       // 0-100
+  description: string; // per-category AI rationale
+}
+
+export interface RecommendationScore {
+  sections: {
+    academicAlignment:       ScoreSection;
+    financialSustainability: ScoreSection;
+    studentSuccess:          ScoreSection;
+    lifestyleCulture:        ScoreSection;
+    admissionChance:         ScoreSection;
+  };
+  composite: number; // 0-100
+  tier: Tier;
+}
 
 export interface Recommendation {
   id: string;

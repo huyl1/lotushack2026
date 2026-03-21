@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecommendationCard } from "./recommendation-card";
@@ -35,6 +35,20 @@ function formatStateLabel(s: { created_at: string; sat_score: number | null; gpa
 
 export function RecommendationsPanel({ recommendations, studentId, basedOnState, statesWithRecs, onStateChange }: RecommendationsPanelProps) {
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [isPending, startTransition] = useTransition();
+  const [matchError, setMatchError] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleRunMatching() {
+    setMatchError(null);
+    const res = await fetch(`/api/students/${studentId}/recommend`, { method: "POST" });
+    const body = await res.json();
+    if (!res.ok) {
+      setMatchError(body.error ?? "Matching failed");
+      return;
+    }
+    startTransition(() => router.refresh());
+  }
 
   const recs = useMemo(() => {
     if (filter === "all") return recommendations;
@@ -156,19 +170,26 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
             </svg>
           }
           action={
-            <Link
-              href={`/students/${studentId}/match`}
-              className="inline-flex items-center gap-2 px-4 py-2 text-caption transition-colors"
-              style={{
-                background: "var(--color-accent)",
-                color: "var(--color-text-inverse)",
-                borderRadius: "var(--radius-xs)",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
-            >
-              Run Matching
-            </Link>
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={handleRunMatching}
+                disabled={isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 text-caption transition-colors cursor-pointer"
+                style={{
+                  background: "var(--color-accent)",
+                  color: "var(--color-text-inverse)",
+                  borderRadius: "var(--radius-xs)",
+                  fontWeight: 600,
+                  border: "none",
+                  opacity: isPending ? 0.6 : 1,
+                }}
+              >
+                {isPending ? "Running…" : "Run Matching"}
+              </button>
+              {matchError && (
+                <span style={{ fontSize: 12, color: "var(--color-error, #ef4444)" }}>{matchError}</span>
+              )}
+            </div>
           }
         />
       ) : recs.length === 0 ? (
