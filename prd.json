@@ -1,0 +1,414 @@
+{
+  "product": {
+    "name": "LotusPath",
+    "tagline": "AI-Powered University Admission Prediction for Vietnamese Students",
+    "description": "A bilingual (Vietnamese/English) AI platform that predicts the likelihood of Vietnamese students being accepted into universities worldwide, and provides long-term, evolving guidance for middle school students working toward their target institutions.",
+    "target_market": "Vietnamese K–12 students, parents, and education consultants",
+    "languages": ["vi", "en"]
+  },
+  "goals": [
+    "Accurately predict university admission likelihood using structured student academic profiles",
+    "Provide per-university percentage scores and confidence intervals",
+    "Offer personalized, evolving roadmaps for middle school students targeting specific universities",
+    "Keep predictions current by incorporating yearly intake and median score changes",
+    "Serve both Vietnamese and English-speaking users with full feature parity"
+  ],
+  "features": {
+    "primary": {
+      "name": "University Admission Predictor",
+      "priority": "P0",
+      "description": "Accepts student academic inputs and returns ranked university admission likelihood scores with confidence levels.",
+      "inputs": {
+        "required": [
+          {
+            "field": "sat_score",
+            "type": "integer",
+            "range": [400, 1600],
+            "description": "SAT composite score (Evidence-Based Reading & Writing + Math)"
+          },
+          {
+            "field": "ielts_score",
+            "type": "float",
+            "range": [0.0, 9.0],
+            "description": "IELTS overall band score"
+          },
+          {
+            "field": "gpa",
+            "type": "float",
+            "range": [0.0, 4.0],
+            "description": "Cumulative GPA on a 4.0 scale"
+          }
+        ],
+        "optional": [
+          {
+            "field": "extracurriculars",
+            "type": "array<string>",
+            "description": "List of extracurricular activities, leadership roles, awards, and community service"
+          },
+          {
+            "field": "toefl_score",
+            "type": "integer",
+            "range": [0, 120],
+            "description": "TOEFL iBT total score (alternative to IELTS)"
+          },
+          {
+            "field": "act_score",
+            "type": "integer",
+            "range": [1, 36],
+            "description": "ACT composite score (alternative to SAT)"
+          },
+          {
+            "field": "ap_courses",
+            "type": "array<string>",
+            "description": "AP or IB courses taken with scores"
+          },
+          {
+            "field": "intended_major",
+            "type": "string",
+            "description": "Intended field of study"
+          },
+          {
+            "field": "target_country",
+            "type": "array<string>",
+            "description": "Preferred destination countries (e.g. US, UK, Australia, Canada)"
+          }
+        ]
+      },
+      "outputs": {
+        "per_university": [
+          {
+            "field": "university_name",
+            "type": "string"
+          },
+          {
+            "field": "country",
+            "type": "string"
+          },
+          {
+            "field": "admission_probability",
+            "type": "float",
+            "description": "Predicted admission likelihood as a percentage (0–100)"
+          },
+          {
+            "field": "confidence_level",
+            "type": "string",
+            "enum": ["Low", "Medium", "High"],
+            "description": "Model confidence based on data availability for that institution"
+          },
+          {
+            "field": "verdict",
+            "type": "string",
+            "enum": ["Safety", "Match", "Reach"],
+            "description": "Categorization relative to student profile"
+          },
+          {
+            "field": "median_stats",
+            "type": "object",
+            "description": "Median SAT, GPA, and IELTS of admitted students for comparison"
+          },
+          {
+            "field": "gap_analysis",
+            "type": "object",
+            "description": "Per-metric delta between student scores and median admits"
+          },
+          {
+            "field": "notes",
+            "type": "string",
+            "description": "AI-generated contextual commentary in user's selected language"
+          }
+        ]
+      },
+      "data_refresh": "University median stats and acceptance rates updated annually from official sources and scraped data"
+    },
+    "secondary": {
+      "name": "Middle School University Roadmap",
+      "priority": "P1",
+      "description": "Generates a personalized, multi-year academic and extracurricular plan for middle school students (grades 6–9) targeting a specific university, updated yearly as intake data changes.",
+      "inputs": [
+        {
+          "field": "current_grade",
+          "type": "integer",
+          "range": [6, 9],
+          "description": "Current school grade"
+        },
+        {
+          "field": "target_university",
+          "type": "string",
+          "description": "Student's target university"
+        },
+        {
+          "field": "intended_major",
+          "type": "string",
+          "description": "Intended field of study"
+        },
+        {
+          "field": "current_gpa",
+          "type": "float",
+          "description": "Current GPA if available"
+        },
+        {
+          "field": "current_strengths",
+          "type": "array<string>",
+          "description": "Current subjects or activities where student excels"
+        }
+      ],
+      "outputs": [
+        {
+          "field": "yearly_roadmap",
+          "type": "array<object>",
+          "description": "Year-by-year plan from current grade through grade 12, including recommended classes, target scores per standardized test, and suggested extracurriculars"
+        },
+        {
+          "field": "score_milestones",
+          "type": "object",
+          "description": "Suggested GPA, SAT/ACT, IELTS targets by grade"
+        },
+        {
+          "field": "course_recommendations",
+          "type": "array<string>",
+          "description": "Suggested AP/IB/honors courses and when to take them"
+        },
+        {
+          "field": "extracurricular_strategy",
+          "type": "array<string>",
+          "description": "Recommended clubs, competitions, volunteer work, and leadership opportunities"
+        },
+        {
+          "field": "annual_refresh",
+          "type": "boolean",
+          "description": "Plan is recalibrated each year based on updated university intake data and student progress"
+        }
+      ]
+    }
+  },
+  "technical_architecture": {
+    "frontend": {
+      "framework": "Next.js (App Router)",
+      "ui_libraries": ["Sleek.design", "Tailwind CSS"],
+      "rapid_prototyping": "Lovable",
+      "i18n": "next-intl for Vietnamese/English switching"
+    },
+    "backend": {
+      "runtime": "Node.js / Next.js API Routes",
+      "cloud": "Google Cloud & Firebase",
+      "database": {
+        "primary": "Firebase Firestore (user profiles, saved predictions, roadmaps)",
+        "vector_store": "Zilliz (university embeddings, semantic similarity search for peer institutions)"
+      },
+      "auth": "Firebase Authentication"
+    },
+    "ai_ml": {
+      "llm_routing": {
+        "tool": "OpenRouter",
+        "purpose": "Route inference requests across multiple LLM providers for cost and latency optimization",
+        "priority": "Required"
+      },
+      "primary_llm": {
+        "tool": "OpenAI API",
+        "models": ["gpt-4o", "text-embedding-3-large"],
+        "purpose": "Core admission prediction reasoning, gap analysis narrative, roadmap generation, and embedding university profiles",
+        "priority": "Required"
+      },
+      "ai_orchestration": {
+        "tool": "Dify",
+        "purpose": "Visual workflow orchestration for multi-step prediction pipelines (data retrieval → embedding lookup → LLM reasoning → output formatting)",
+        "priority": "Recommended"
+      }
+    },
+    "data_acquisition": {
+      "web_search": {
+        "tool": "Exa",
+        "purpose": "Semantic search for up-to-date university admission statistics, acceptance rates, and class profile data",
+        "priority": "Recommended"
+      }
+    },
+    "integrations": {
+      "mobile_app": {
+        "tool": "Appifex",
+        "purpose": "Wrap the web app as a native mobile application for iOS and Android distribution in Vietnam",
+        "priority": "P2 (lower priority)"
+      },
+      "realtime_communication": {
+        "tool": "Agora",
+        "purpose": "In-app video/voice consultations between students and education advisors",
+        "priority": "Optional / Future"
+      },
+      "voice_ui": {
+        "tool": "ElevenLabs",
+        "purpose": "Vietnamese and English text-to-speech for accessibility and audio summaries of prediction results",
+        "priority": "Optional / Future"
+      }
+    },
+    "infrastructure": {
+      "cloud_provider": "Google Cloud & Firebase"
+    }
+  },
+  "university_database": {
+    "description": "Curated, annually-refreshed dataset of university admission profiles",
+    "fields_per_university": [
+      "university_name",
+      "country",
+      "acceptance_rate",
+      "median_sat",
+      "median_act",
+      "median_gpa",
+      "median_ielts",
+      "popular_majors",
+      "international_student_percentage",
+      "application_deadlines",
+      "year_of_data",
+      "data_sources"
+    ],
+    "initial_scope": [
+      "United States (Top 200 universities including Ivy League, state schools, test-optional)",
+      "United Kingdom (Russell Group + top 50)",
+      "Australia (Group of Eight + top 30)",
+      "Canada (U15 + top 30)",
+      "Singapore (NUS, NTU, SMU)",
+      "Germany (top English-taught programs)",
+      "Other popular Vietnamese student destinations"
+    ],
+    "data_sources": [
+      "Common Data Set (US)",
+      "UCAS statistics (UK)",
+      "University official admissions pages (scraped via Bright Data + ByteRover)",
+      "QS World University Rankings",
+      "Times Higher Education Rankings",
+      "Exa semantic search results"
+    ]
+  },
+  "prediction_model": {
+    "approach": "Hybrid: embedding-based similarity (Zilliz) + LLM reasoning (OpenAI via OpenRouter)",
+    "steps": [
+      "1. Embed student profile into a vector representation using text-embedding-3-large",
+      "2. Retrieve top-k most similar historical admitted student profiles from Zilliz vector store",
+      "3. Compute baseline probability from similarity scores and historical admission rates",
+      "4. Pass student profile + retrieved context + university stats to GPT-4o for reasoning-augmented probability refinement",
+      "5. Generate gap analysis, verdict (Safety/Match/Reach), and localized narrative commentary",
+      "6. Return structured JSON response consumed by frontend"
+    ],
+    "confidence_calculation": "Based on number of Vietnamese student data points available for that university — more data = higher confidence",
+    "extracurricular_weighting": "LLM holistic evaluation of extracurriculars mapped to university-stated selection criteria where available"
+  },
+  "user_stories": [
+    {
+      "id": "US-001",
+      "persona": "High school student (Grade 11–12)",
+      "story": "As a Vietnamese high school student, I want to enter my SAT, IELTS, and GPA and receive a ranked list of universities I'm likely to be admitted to, so I can make informed application decisions.",
+      "acceptance_criteria": [
+        "System returns at least 10 universities with admission probability and confidence level",
+        "Results are displayed in Vietnamese and English",
+        "Gap analysis shows what scores I need to improve my odds"
+      ]
+    },
+    {
+      "id": "US-002",
+      "persona": "Parent of a high school student",
+      "story": "As a parent, I want to compare my child's profile against multiple universities at once and see clear Safety/Match/Reach categorization, so I can help them build a balanced school list.",
+      "acceptance_criteria": [
+        "Side-by-side comparison view of multiple universities",
+        "Verdict labels clearly visible",
+        "Shareable results link or PDF export"
+      ]
+    },
+    {
+      "id": "US-003",
+      "persona": "Middle school student (Grade 6–9)",
+      "story": "As a Grade 7 student, I want to enter my dream university and receive a year-by-year plan of what classes to take and scores to aim for, so I can start preparing early.",
+      "acceptance_criteria": [
+        "Roadmap covers each academic year from current grade through Grade 12",
+        "Includes specific course recommendations and score targets",
+        "Plan updates annually when I log back in"
+      ]
+    },
+    {
+      "id": "US-004",
+      "persona": "Education consultant",
+      "story": "As an education consultant, I want to quickly generate predictions for multiple student profiles so I can advise my clients efficiently.",
+      "acceptance_criteria": [
+        "Batch input support for multiple students",
+        "Exportable results per student",
+        "API access for integration into existing consultant tools"
+      ]
+    }
+  ],
+  "non_functional_requirements": {
+    "performance": "Prediction results returned within 10 seconds for a full university list",
+    "accuracy": "Admission probability within ±10 percentage points of actual historical outcomes on test set",
+    "availability": "99.5% uptime SLA via Google Cloud",
+    "scalability": "Support up to 10,000 concurrent users during peak Vietnamese application season (Oct–Dec)",
+    "localization": {
+      "languages": ["Vietnamese (vi)", "English (en)"],
+      "default_language": "Vietnamese",
+      "all_ui_and_outputs_localized": true
+    },
+    "data_privacy": "Student profiles stored securely in Firebase; no personally identifiable data sold or shared; PDPD (Vietnam Personal Data Protection Decree) compliant",
+    "accessibility": "WCAG 2.1 AA compliance; ElevenLabs TTS for audio accessibility"
+  },
+  "milestones": [
+    {
+      "phase": "MVP",
+      "deliverables": [
+        "University admission predictor for US, UK, Australia universities",
+        "Core inputs: SAT, IELTS, GPA",
+        "Vietnamese and English UI",
+        "Firebase auth and profile storage",
+        "OpenAI + OpenRouter integration"
+      ]
+    },
+    {
+      "phase": "v1.1",
+      "deliverables": [
+        "Extracurricular input and weighting",
+        "Expanded university database (Canada, Singapore, Germany)",
+        "Zilliz vector similarity for improved accuracy",
+        "Bright Data + Exa annual data refresh pipeline"
+      ]
+    },
+    {
+      "phase": "v1.2",
+      "deliverables": [
+        "Middle school roadmap feature",
+        "Annual plan refresh mechanism",
+        "Dify workflow orchestration for roadmap generation"
+      ]
+    },
+    {
+      "phase": "v2.0",
+      "deliverables": [
+        "Appifex mobile app",
+        "Agora advisor consultation feature",
+        "ElevenLabs audio summaries",
+        "Education consultant batch API"
+      ]
+    }
+  ],
+  "tools_summary": {
+    "required": [
+      { "tool": "OpenRouter", "role": "LLM routing and cost optimization" },
+      { "tool": "OpenAI API", "role": "Core AI predictions, embeddings, and roadmap generation" },
+      { "tool": "Google Cloud & Firebase", "role": "Cloud infrastructure, database, and authentication" }
+    ],
+    "recommended": [
+      { "tool": "Zilliz", "role": "Vector store for university profile embeddings — core to prediction model accuracy" },
+      { "tool": "Exa", "role": "Semantic web search for live university admission data and annual stat refreshes" },
+      { "tool": "Dify", "role": "AI workflow orchestration for the multi-step prediction pipeline" }
+    ],
+    "optional_future": [
+      { "tool": "Appifex", "role": "Mobile app wrapper (lower priority)" },
+      { "tool": "Agora", "role": "In-app advisor video calls" },
+      { "tool": "ElevenLabs", "role": "Text-to-speech for Vietnamese/English audio" },
+      { "tool": "Bright Data", "role": "Structured web scraping if Exa coverage proves insufficient" },
+      { "tool": "ByteRover", "role": "Dynamic university portal scraping" },
+      { "tool": "Qwen", "role": "Vietnamese-language LLM fallback via OpenRouter" },
+      { "tool": "Manus AI", "role": "Autonomous data refresh agents" },
+      { "tool": "Interfaze (JigsawStack)", "role": "API integration layer" },
+      { "tool": "Lovable", "role": "Rapid frontend prototyping" },
+      { "tool": "Sleek.design", "role": "UI design system" },
+      { "tool": "Trae", "role": "AI-native development IDE" },
+      { "tool": "AWS Kiro", "role": "Agentic CI/CD and cloud deployment" },
+      { "tool": "Notion", "role": "Internal documentation" },
+      { "tool": "VALSEA", "role": "TBD based on further scoping" }
+    ]
+  }
+}
