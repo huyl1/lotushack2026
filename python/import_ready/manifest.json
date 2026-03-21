@@ -1,7 +1,7 @@
 {
   "source": "/Users/tunguyen/lotushack2026/python/output/qs_top250_admissions_params.jsonl",
-  "universities_count": 7,
-  "majors_count": 70,
+  "universities_count": 196,
+  "majors_count": 1870,
   "files": {
     "universities_jsonl": "/Users/tunguyen/lotushack2026/python/import_ready/universities.jsonl",
     "majors_jsonl": "/Users/tunguyen/lotushack2026/python/import_ready/majors.jsonl",
