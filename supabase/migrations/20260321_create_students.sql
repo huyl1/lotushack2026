@@ -11,17 +11,19 @@ CREATE TABLE public.student_states (
   student_id UUID NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
   sat_score INTEGER,
   ielts_score NUMERIC(2,1),
+  gpa NUMERIC,
+  act_score INTEGER,
+  target_majors TEXT[],
+  preferred_countries TEXT[],
+  preferred_setting TEXT,
+  preferred_size TEXT,
+  budget_usd NUMERIC,
+  needs_financial_aid BOOLEAN,
+  target_acceptance_rate_min NUMERIC,
+  application_round TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_states ENABLE ROW LEVEL SECURITY;
-
--- Allow authenticated users to read/write
-CREATE POLICY "Authenticated users can read students" ON public.students FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated users can insert students" ON public.students FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated users can update students" ON public.students FOR UPDATE TO authenticated USING (true);
-
-CREATE POLICY "Authenticated users can read student_states" ON public.student_states FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated users can insert student_states" ON public.student_states FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated users can update student_states" ON public.student_states FOR UPDATE TO authenticated USING (true);
+-- Only authenticated users (no anonymous access)
+REVOKE ALL ON public.students FROM anon;
+REVOKE ALL ON public.student_states FROM anon;

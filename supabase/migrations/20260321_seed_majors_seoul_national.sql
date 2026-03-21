@@ -1,0 +1,16 @@
+INSERT INTO public.majors (university_id, major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+SELECT u.id, v.major_name, v.acceptance_rate, v.supplemental_requirements, v.subject_ranking, v.ielts_min, v.toefl_min, v.sat_min, v.act_min, v.gpa_min, v.a_level_grades, v.ib_min, v.atar_min, v.duolingo_min, v.pte_min
+FROM public.universities u
+CROSS JOIN (VALUES
+  ('Computer Science & Engineering', 10, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS #44 (2025)', 6.0, 80, NULL::INTEGER, NULL::INTEGER, 3.5, 'AAA', 34, NULL::NUMERIC, 105, 58),
+  ('Electrical & Computer Engineering', 10, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS #38 Engineering & Technology (2025)', 6.0, 80, NULL, NULL, 3.5, 'AAA', 34, NULL, 105, 58),
+  ('Mechanical & Aerospace Engineering', 12, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS #21 (2025)', 6.0, 80, NULL, NULL, 3.5, 'AAA', 34, NULL, 105, 58),
+  ('Business Administration', 12, 'TOPIK 3+ for Korean-track programs; personal statement and study plan required; 2 recommendation letters; interview required', 'QS #40 Business & Management (2025)', 6.0, 80, NULL, NULL, 3.5, 'AAA', 34, NULL, 105, 58),
+  ('Economics', 15, 'TOPIK 3+ for Korean-track programs; personal statement and study plan required; 2 recommendation letters; interview required', 'QS #36 Accounting & Finance (2025)', 6.0, 80, NULL, NULL, 3.3, 'AAB', 33, NULL, 105, 58),
+  ('Chemical & Biological Engineering', 12, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS #11 Chemical Engineering (2025)', 6.0, 80, NULL, NULL, 3.5, 'AAA', 34, NULL, 105, 58),
+  ('International Relations', 15, 'TOPIK 3+ for Korean-track programs; personal statement and study plan required; 2 recommendation letters; interview required; some courses taught in English via GSIS track', 'QS Top 50 Social Policy & Administration (2025)', 6.0, 80, NULL, NULL, 3.3, 'AAB', 33, NULL, 105, 58),
+  ('Biological Sciences', 15, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS #43 (2025)', 6.0, 80, NULL, NULL, 3.3, 'AAB', 33, NULL, 105, 58),
+  ('Materials Science & Engineering', 12, 'TOPIK 3+ for Korean-track programs; portfolio or personal statement required; 2 recommendation letters; interview may be required', 'QS Top 50 (2025)', 6.0, 80, NULL, NULL, 3.5, 'AAA', 34, NULL, 105, 58),
+  ('Mathematics', 15, 'TOPIK 3+ for Korean-track programs; personal statement and study plan required; 2 recommendation letters; interview may be required', 'QS #46 (2025)', 6.0, 80, NULL, NULL, 3.3, 'AAB', 33, NULL, 105, 58)
+) AS v(major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+WHERE u.name = 'Seoul National University';

@@ -1,8 +1,15 @@
 {
   "mcpServers": {
-    "next-devtools": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=erfubjzeantptcuetwti"
+    },
+    "exa": {
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
+      "args": ["-y", "exa-mcp-server"],
+      "env": {
+        "EXA_API_KEY": "5dc3b438-f9eb-4339-92ac-0bb93c9da388"
+      }
     }
   }
 }

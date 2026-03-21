@@ -1,0 +1,35 @@
+-- Part 1: Update university-level data for University of Geneva
+UPDATE public.universities SET
+  website_url = 'https://www.unige.ch/en/',
+  tuition_usd = 1100,
+  overall_acceptance_rate = '30-35%',
+  test_policy = 'Not applicable',
+  deadline_calendar = 'Applications open December 1 for the following academic year (September start). Non-Swiss/non-EU students must apply by April 30 for autumn semester. Swiss and EU/EFTA students may apply until June 30. Some faculties (Medicine, Dentistry) have earlier deadlines and stricter numerus clausus. Spring semester (February) applications close November 30. Applications submitted via the online portal at etudes.unige.ch.',
+  financial_aid = 'Very low tuition: CHF 500/semester (~USD 550) for all students regardless of nationality. Swiss Confederation Excellence Scholarships available for non-Swiss nationals (covers tuition, monthly stipend ~CHF 1,920, accommodation allowance, health insurance contribution). University of Geneva Excellence Master Fellowships available. Canton of Geneva need-based grants for Swiss residents. Erasmus+ mobility grants for exchange students. Private foundations and external scholarships listed on university website. No blocked account required for EU/EFTA; non-EU may need proof of ~CHF 21,000/year for visa purposes.'
+WHERE name = 'University of Geneva';
+
+-- Part 2: Insert top 10 majors for University of Geneva
+INSERT INTO public.majors (
+  university_id, major_name, acceptance_rate, supplemental_requirements,
+  subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min,
+  a_level_grades, ib_min, atar_min, duolingo_min, pte_min
+)
+SELECT
+  u.id,
+  v.major_name, v.acceptance_rate, v.supplemental_requirements,
+  v.subject_ranking, v.ielts_min, v.toefl_min, v.sat_min, v.act_min, v.gpa_min,
+  v.a_level_grades, v.ib_min, v.atar_min, v.duolingo_min, v.pte_min
+FROM public.universities u
+CROSS JOIN (VALUES
+  ('International Relations (Bachelor en Relations internationales)', '28%', 'Apply via online portal (etudes.unige.ch). Program taught primarily in French; French B2 (DELF/DALF) required for non-native speakers. English proficiency: IELTS 6.5 or TOEFL 85. Geneva''s unique position as UN/NGO hub makes this program highly competitive. Statement of purpose and certified transcripts required. No SAT/ACT required.', 85, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 30, NULL::numeric, 100, 58),
+  ('Law (Bachelor en droit)', '30%', 'Apply via online portal. Program taught in French; French C1 proficiency required. English proficiency for foreign applicants: IELTS 6.5 or TOEFL 85. Secondary school leaving certificate equivalent to Swiss Maturite required. Strong analytical and writing skills expected. Certified transcripts and identity documents required.', 120, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 30, NULL::numeric, 100, 58),
+  ('Economics (Bachelor en Economie politique)', '30%', 'Apply via online portal. Taught in French; French B2 required. English: IELTS 6.5 or TOEFL 85. Strong mathematics background essential. Faculty of Social Sciences. Part of the Geneva School of Economics and Management (GSEM). Certified transcripts required. Numerus clausus may apply.', 130, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 30, NULL::numeric, 100, 58),
+  ('Medicine (Bachelor en medecine)', '8%', 'Highly selective. Swiss federal numerus clausus exam (EMS/TMS) required for Swiss applicants. Non-Swiss applicants quota applies (max 25% non-Swiss). French C1 required. IELTS 6.5 or TOEFL 85 for English proficiency. Six-year program leading to federal medical diploma. Biology and Chemistry background essential. Applications close November 30 for the following year.', 90, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.5::numeric, 'AAA', 35, NULL::numeric, 110, 65),
+  ('Psychology (Bachelor en Psychologie)', '35%', 'Apply via online portal. Taught in French; French B2 required. English: IELTS 6.5 or TOEFL 85. Faculty of Psychology and Education Sciences. Covers clinical, developmental, social, and cognitive psychology. Certified transcripts required. No entrance exam for bachelor''s level; admission based on secondary school diploma equivalence.', 175, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 28, NULL::numeric, 100, 58),
+  ('Biology (Bachelor en Biologie)', '32%', 'Apply via online portal. Taught in French; French B2 required. English: IELTS 6.5 or TOEFL 85. Faculty of Science. Strong background in biology, chemistry, and mathematics required. Multiple specialisation tracks including molecular biology, ecology, and biochemistry. Certified transcripts and science prerequisites required.', 185, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 29, NULL::numeric, 100, 58),
+  ('Computer Science (Bachelor en Informatique)', '28%', 'Apply via online portal. Taught in French; French B2 required. English: IELTS 6.5 or TOEFL 85. Faculty of Science. Strong mathematics background essential (calculus, linear algebra, discrete mathematics). Covers algorithms, programming, software engineering, and AI. Certified transcripts required. Competitive admission.', 280, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 30, NULL::numeric, 100, 58),
+  ('Physics (Bachelor en Physique)', '30%', 'Apply via online portal. Taught in French; French B2 required. English: IELTS 6.5 or TOEFL 85. Faculty of Science. Proximity to CERN provides exceptional research opportunities. Strong mathematics and physics background required. Certified transcripts required. Joint program options available with mathematics.', 190, 6.5::numeric, 85, NULL::integer, NULL::integer, 3.0::numeric, 'ABB', 30, NULL::numeric, 100, 58),
+  ('Philosophy (Bachelor en Philosophie)', '40%', 'Apply via online portal. Taught in French; French B2-C1 required. English: IELTS 6.5 or TOEFL 85. Faculty of Arts (Lettres). Covers analytic and continental philosophy, logic, ethics, and history of philosophy. Strong humanities background recommended. Certified transcripts and secondary school diploma equivalence required.', 140, 6.5::numeric, 85, NULL::integer, NULL::integer, 2.8::numeric, 'ABB', 28, NULL::numeric, 100, 58),
+  ('History of Art and Museology (Bachelor en Histoire de l''art et Museologie)', '38%', 'Apply via online portal. Taught in French; French B2-C1 required. English: IELTS 6.5 or TOEFL 85. Faculty of Arts. Geneva''s rich museum environment (MAMCO, Musee d''art et d''histoire, CERN Art Programme) provides exceptional practical exposure. Portfolio or statement of interest recommended but not mandatory. Certified transcripts required.', 195, 6.5::numeric, 85, NULL::integer, NULL::integer, 2.8::numeric, 'ABB', 28, NULL::numeric, 100, 58)
+) AS v(major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+WHERE u.name = 'University of Geneva';

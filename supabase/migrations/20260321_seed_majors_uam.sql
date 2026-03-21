@@ -1,0 +1,35 @@
+-- Part 1: Update university-level data for Universidad Autónoma de Madrid
+UPDATE public.universities SET
+  website_url = 'https://www.uam.es/uam/en.html',
+  tuition_usd = 7600,
+  overall_acceptance_rate = '45-55% (varies by faculty; competitive for Medicine and Science programs)',
+  test_policy = 'Not applicable',
+  deadline_calendar = 'EU/EEA students apply via Spanish UNED/PCE prueba (Prueba de Competencias Específicas) or EvAU (university entrance exam); applications open January-June for September intake. Non-EU international students apply directly to UAM International Relations Office; main deadline is May-June for September start, November-December for February start. Exchange students apply through Erasmus+ or bilateral agreements with faculty-specific deadlines. Medicine and Health Science programs have separate, earlier deadlines (February-March).',
+  financial_aid = 'Non-EU international undergraduate tuition: approximately €6,000-€11,000/year depending on degree and credits (public regulated prices set by Community of Madrid). EU/EEA students pay domestic rates (~€800-€1,500/year). MEC (Ministerio de Educación) general scholarship for EU-resident students (need + merit based; up to ~€6,000/year). UAM excellence scholarships for top international students. Erasmus+ grants for incoming exchange students (€300-€800/month). Banco Santander-UAM scholarships for selected programs. Living costs in Madrid approximately €900-€1,200/month. Student visa requires proof of financial means (~€7,200/year).'
+WHERE name = 'Universidad Autónoma de Madrid';
+
+-- Part 2: Insert top 10 majors for Universidad Autónoma de Madrid
+INSERT INTO public.majors (
+  university_id, major_name, acceptance_rate, supplemental_requirements,
+  subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min,
+  a_level_grades, ib_min, atar_min, duolingo_min, pte_min
+)
+SELECT
+  u.id,
+  v.major_name, v.acceptance_rate, v.supplemental_requirements,
+  v.subject_ranking, v.ielts_min, v.toefl_min, v.sat_min, v.act_min, v.gpa_min,
+  v.a_level_grades, v.ib_min, v.atar_min, v.duolingo_min, v.pte_min
+FROM public.universities u
+CROSS JOIN (VALUES
+  ('Medicine (Medicina)', 8.0, 'Extremely competitive. Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish C1 required (all instruction in Spanish). Minimum EvAU grade ~13.5/14 typically required. 6-year program (360 ECTS) leading to Grado en Medicina. UAM Medicine Faculty is one of the most prestigious in Spain. Clinical placements at La Paz, La Princesa, and Puerta de Hierro hospitals. No SAT/ACT required.', 'QS #151-200 World (Medicine); Top 5 Spain', NULL, NULL, NULL, NULL, 3.8, 'A*A*A*', 38, NULL, NULL, NULL),
+  ('Law (Derecho)', 40.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish C1 required (all instruction in Spanish). Strong background in humanities and social sciences expected. 4-year program (240 ECTS) at Facultad de Derecho. Double degree options available (Law + Political Science; Law + Business Administration). No SAT/ACT required.', 'Top 10 Spain (Law)', NULL, NULL, NULL, NULL, 3.3, 'ABB', 30, NULL, NULL, NULL),
+  ('Economics (Economía)', 35.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish B2-C1 required. Strong mathematics background essential. 4-year program (240 ECTS) at Facultad de Ciencias Económicas y Empresariales. Quantitative and analytical skills strongly recommended. Double degree options available. No SAT/ACT required.', 'Top 10 Spain (Economics)', NULL, NULL, NULL, NULL, 3.3, 'ABB', 30, NULL, NULL, NULL),
+  ('Business Administration (Administración y Dirección de Empresas)', 38.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish B2-C1 required. Some bilingual Spanish-English track available. 4-year program (240 ECTS) at Facultad de Ciencias Económicas y Empresariales. Strong analytical and quantitative skills recommended. No SAT/ACT required.', 'Top 10 Spain (Business & Management)', NULL, NULL, NULL, NULL, 3.2, 'ABB', 29, NULL, NULL, NULL),
+  ('Psychology (Psicología)', 25.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish C1 required (all instruction in Spanish). 4-year program (240 ECTS) at Facultad de Psicología. Competitive program; high EvAU cut-off grade (~11.5+). Strong background in biology and social sciences beneficial. No SAT/ACT required.', 'QS Top 200 World (Psychology); Top 5 Spain', NULL, NULL, NULL, NULL, 3.4, 'ABB', 31, NULL, NULL, NULL),
+  ('Computer Science and Engineering (Ingeniería Informática)', 30.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish B2-C1 required. Strong mathematics and physics background essential. 4-year program (240 ECTS) at Escuela Politécnica Superior. Bilingual Spanish-English track available in some electives. No SAT/ACT required.', 'Top 10 Spain (Computer Science & Engineering)', NULL, NULL, NULL, NULL, 3.3, 'ABB', 30, NULL, NULL, NULL),
+  ('Biology (Biología)', 28.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish B2-C1 required. Strong biology and chemistry background essential. 4-year program (240 ECTS) at Facultad de Ciencias. UAM science campus hosts Severo Ochoa Excellence Research Center. Research-focused curriculum with lab work from year 1. No SAT/ACT required.', 'QS Top 200 World (Biological Sciences); Top 5 Spain', NULL, NULL, NULL, NULL, 3.3, 'ABB', 30, NULL, NULL, NULL),
+  ('Physics (Física)', 32.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish B2-C1 required. Strong mathematics and physics background essential. 4-year program (240 ECTS) at Facultad de Ciencias. UAM Physics is closely linked to the Instituto de Ciencia de Materiales de Madrid (ICMM-CSIC). No SAT/ACT required.', 'QS Top 300 World (Physics & Astronomy); Top 5 Spain', NULL, NULL, NULL, NULL, 3.3, 'AAB', 31, NULL, NULL, NULL),
+  ('Political Science (Ciencias Políticas)', 42.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish C1 required. 4-year program (240 ECTS) at Facultad de Derecho. Some courses offered in English within the program. Double degree option with Law available. Strong background in social sciences and humanities expected. No SAT/ACT required.', 'Top 10 Spain (Politics & International Studies)', NULL, NULL, NULL, NULL, 3.2, 'ABB', 29, NULL, NULL, NULL),
+  ('History (Historia)', 50.0, 'Apply via EvAU/PCE (Spain) or direct application for non-EU. Spanish C1 required. 4-year program (240 ECTS) at Facultad de Filosofía y Letras. Covers ancient, medieval, modern, and contemporary history with emphasis on Iberian and Latin American history. UAM Humanities Faculty offers an extensive range of specialisations. No SAT/ACT required.', 'Top 10 Spain (History)', NULL, NULL, NULL, NULL, 3.0, 'ABB', 28, NULL, NULL, NULL)
+) AS v(major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+WHERE u.name = 'Universidad Autónoma de Madrid';

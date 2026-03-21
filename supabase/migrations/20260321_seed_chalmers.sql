@@ -1,0 +1,33 @@
+-- Part 1: University-level data for Chalmers University of Technology
+-- Bachelor''s programmes are taught in Swedish only; master''s programmes are in English and open to international students.
+-- Non-EU/EEA students pay tuition (~145,000 SEK/year ≈ $13,500 USD); EU/EEA students are exempt from tuition fees under Swedish law.
+-- Exchange rate used: 1 SEK ≈ 0.093 USD (March 2025); typical Chalmers master''s fee ~145,000 SEK → ~$13,500 USD.
+UPDATE public.universities SET
+  website_url = 'https://www.chalmers.se',
+  tuition_usd = 13500,
+  overall_acceptance_rate = '35%',
+  test_policy = 'Not applicable',
+  deadline_calendar = 'Master''s programmes: Apply via universityadmissions.se. Round 1 (main): mid-October to mid-January (results April); Round 2 (limited seats): February 1 to April 15 (results June). Programmes start in late August. EU/EEA students pay no tuition; non-EU/EEA students pay programme-specific fees (~125,000–160,000 SEK/year ≈ $11,600–$14,900 USD). No SAT/ACT required.',
+  financial_aid = 'Chalmers IPOET Scholarship (Swedish Institute-funded, covers full tuition for non-EU/EEA students with outstanding academic record); Swedish Institute Scholarships for Global Professionals (SISGP) for master''s students from eligible countries (covers tuition, living allowance ~11,000 SEK/month, travel grant, insurance); Chalmers Merit Scholarship (partial tuition reduction for top applicants); Adlerbert Study Foundation grants for students at Chalmers; ERASMUS+ funding available for exchange students from partner universities; emergency student aid via Chalmers student union.'
+WHERE name = 'Chalmers University of Technology';
+
+-- Part 2: Top 10 master''s programmes (English-taught) for Chalmers University of Technology
+-- Bachelor''s programmes at Chalmers are taught entirely in Swedish and not accessible to international English-speaking applicants.
+-- All listed programmes are English-taught master''s (MSc) programmes open to international applicants.
+-- No SAT, ACT, or ATAR requirements. IELTS 6.5 / TOEFL 90 minimum for all. subject_ranking: 1=world top 50, 2=top 100, 3=top 200.
+INSERT INTO public.majors (university_id, major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+SELECT u.id, v.major_name, v.acceptance_rate, v.supplemental_requirements, v.subject_ranking, v.ielts_min, v.toefl_min, v.sat_min, v.act_min, v.gpa_min, v.a_level_grades, v.ib_min, v.atar_min, v.duolingo_min, v.pte_min
+FROM public.universities u
+CROSS JOIN (VALUES
+  ('MSc Computer Science - Algorithms, Languages and Logic', '30%', 'Bachelor''s degree in Computer Science, Software Engineering, or equivalent; specific requirements: courses in algorithms (7.5 ECTS), data structures (7.5 ECTS), and at least one of logic or discrete mathematics; apply via universityadmissions.se; no GRE required', 2, 6.5::numeric, 90, NULL::int, NULL::int, 3.0::numeric, 'ABB', 30, NULL::numeric, 120, 62),
+  ('MSc Computer Science - Computer Systems and Networks', '32%', 'Bachelor''s degree in Computer Science, Software Engineering, Electrical Engineering, or equivalent; specific requirements: courses in operating systems (7.5 ECTS), computer architecture (7.5 ECTS), and computer networks or distributed systems; apply via universityadmissions.se', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Electrical Engineering', '35%', 'Bachelor''s degree in Electrical Engineering, Electronics, or closely related field; specific requirements: circuit theory, signal processing, and electromagnetic field theory (each 7.5 ECTS); strong mathematics background including calculus and linear algebra required', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Sustainable Energy Systems', '40%', 'Bachelor''s degree in Engineering Physics, Electrical Engineering, Mechanical Engineering, Chemical Engineering, or equivalent; specific requirements: thermodynamics (7.5 ECTS), fluid mechanics or heat transfer (7.5 ECTS), and mathematics including differential equations; motivation letter recommended', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Engineering Mathematics and Computational Science', '28%', 'Bachelor''s degree in Mathematics, Engineering Physics, or equivalent; specific requirements: advanced calculus, linear algebra, complex analysis, and numerical analysis (each 7.5 ECTS); programming experience in Python, MATLAB, or C++ expected', 1, 6.5, 90, NULL, NULL, 3.2, 'AAB', 32, NULL, 120, 62),
+  ('MSc Nanotechnology', '38%', 'Bachelor''s degree in Engineering Physics, Physics, Chemistry, or Materials Science; specific requirements: quantum mechanics, solid state physics or materials science, and chemistry or biochemistry (each 7.5 ECTS); laboratory experience beneficial', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Biomedical Engineering', '35%', 'Bachelor''s degree in Engineering Physics, Electrical Engineering, Mechanical Engineering, or equivalent with biomedical focus; specific requirements: mathematics (15 ECTS), physics or chemistry (7.5 ECTS), and biology or biomechanics (7.5 ECTS); apply via universityadmissions.se', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Software Engineering and Technology', '33%', 'Bachelor''s degree in Software Engineering, Computer Science, or equivalent; specific requirements: software engineering principles (7.5 ECTS), object-oriented programming (7.5 ECTS), and mathematics including discrete mathematics or logic; industry internship experience valued', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62),
+  ('MSc Engineering Physics', '25%', 'Bachelor''s degree in Engineering Physics or Physics; specific requirements: mechanics, electromagnetism, quantum mechanics, thermodynamics, and mathematics including vector analysis and complex analysis (each 7.5 ECTS); highly competitive programme with strong mathematical foundation required', 1, 6.5, 90, NULL, NULL, 3.2, 'AAB', 32, NULL, 120, 62),
+  ('MSc Industrial Ecology', '42%', 'Bachelor''s degree in Chemical Engineering, Environmental Science, Mechanical Engineering, Civil Engineering, or equivalent; specific requirements: chemistry (7.5 ECTS), mathematics (7.5 ECTS), and thermodynamics or energy systems (7.5 ECTS); interdisciplinary background combining engineering and sustainability valued', 2, 6.5, 90, NULL, NULL, 3.0, 'ABB', 30, NULL, 120, 62)
+) AS v(major_name, acceptance_rate, supplemental_requirements, subject_ranking, ielts_min, toefl_min, sat_min, act_min, gpa_min, a_level_grades, ib_min, atar_min, duolingo_min, pte_min)
+WHERE u.name = 'Chalmers University of Technology';
