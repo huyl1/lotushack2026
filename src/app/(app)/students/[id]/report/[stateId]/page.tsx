@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { getRecommendationsForState } from "@/lib/data/queries";
 import { ReportView } from "@/components/student/report-view";
 import type { Student } from "@/lib/supabase/types";
@@ -11,7 +11,7 @@ export default async function ReportPage({
 }) {
   const { id, stateId } = await params;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: student } = await supabase
     .from("students")
     .select("*")

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import type {
   Student,
   StudentState,
@@ -15,7 +15,7 @@ import type {
    ============================================================ */
 
 export async function getStudentsWithLatestState(): Promise<StudentWithLatestState[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Use RPC or raw query to get students with their latest state in one trip
   // For now, two queries but efficient: students + latest state per student via distinct on
@@ -70,7 +70,7 @@ export async function getStudentsWithLatestState(): Promise<StudentWithLatestSta
 }
 
 export async function getDashboardStats() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Use SQL aggregation instead of fetching all rows and counting in JS
   const { data: stageCounts } = await supabase
@@ -143,7 +143,7 @@ export async function getDashboardStats() {
 export async function getStudentDetail(
   studentId: string
 ): Promise<StudentDetail | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: student, error } = await supabase
     .from("students")
@@ -229,7 +229,7 @@ export async function getStudentDetail(
 export async function getRecommendationsForState(
   stateId: string
 ): Promise<{ state: StudentState; recommendations: Recommendation[] } | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: state, error } = await supabase
     .from("student_states")
