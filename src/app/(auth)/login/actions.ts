@@ -15,7 +15,7 @@ export async function login(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function signup(formData: FormData) {
@@ -30,11 +30,11 @@ export async function signup(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function signout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect("/login");
 }

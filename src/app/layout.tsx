@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Syne } from "next/font/google";
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,15 +12,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const syne = Syne({
-  variable: "--font-syne",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
   title: "Edify",
-  description: "Edify",
+  description: "AI-powered university matching for education consultants",
 };
 
 export default function RootLayout({
@@ -33,18 +31,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
     >
-      <body className="grain min-h-full flex flex-col">
-        <Theme
-          accentColor="ruby"
-          grayColor="sand"
-          radius="medium"
-          panelBackground="translucent"
-        >
-          {children}
-        </Theme>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

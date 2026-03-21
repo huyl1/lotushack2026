@@ -25,24 +25,28 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh the session (important for token rotation)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /dashboard routes
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  const { pathname } = request.nextUrl;
+
+  // Protected routes — redirect to login if not authenticated
+  const isProtected =
+    pathname === "/" || pathname.startsWith("/students");
+
+  if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Redirect logged-in users away from /login
-  if (user && request.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (user && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/", "/students/:path*", "/login"],
 };

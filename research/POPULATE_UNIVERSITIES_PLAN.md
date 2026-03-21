@@ -1,9 +1,16 @@
 # Plan: Populate University + Majors Data
 
-## Status
-- **37/250 universities completed** (university-level only, as of session end)
-- **0 majors populated** yet
-- **~213 universities remaining**
+## Status (as of 2026-03-21)
+- **244/250 universities have uni-level data** (6 still missing: Reading, Waseda, TU Wien, NYCU, Gothenburg, Twente — La Trobe & U Chile filled)
+- **~113/250 universities have majors** (2,500 total majors in DB, avg 10 per uni)
+- **~137 universities still need majors populated**
+- University-level data was refreshed via Exa research for all 250 universities
+- ~390 Sonnet subagents were launched; ~50% succeeded in writing to DB, ~50% blocked on Bash/curl permissions
+- All blocked agents completed their Exa research — data exists in agent output logs but couldn't be written
+- Successful agents include: MIT, Imperial, Stanford, Harvard, Yale, Princeton, Cornell, UPenn, Brown, Cambridge, Tsinghua, UofT, Fudan, NTU SG, TU Delft, Zhejiang, SJTU, Melbourne, UNSW types, Paris-Saclay, Helsinki, UC Davis, UCSD, Purdue, UW, Glasgow, Leeds, Sheffield, Nottingham, Durham, Birmingham, KIT, Polimi, KU Leuven, KFUPM, KTH, Ghent, Erasmus, TU Berlin, Stockholm, Hamburg, Newcastle UK, Basel, Humboldt, UKM, RMIT, USP, UMontreal, Ottawa, ENS Lyon, VU Amsterdam, U Chile, UM Malaysia + more
+
+### Known issue
+`bypassPermissions` mode does NOT reliably grant Bash/curl access to subagents. The recommended approach for remaining work is to run curl commands directly from the main session (where permissions work), or write a batch script.
 
 ## What to do
 

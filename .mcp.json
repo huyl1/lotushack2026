@@ -10,6 +10,13 @@
       "env": {
         "EXA_API_KEY": "5dc3b438-f9eb-4339-92ac-0bb93c9da388"
       }
+    },
+    "next-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ]
     }
   }
 }
