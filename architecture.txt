@@ -1,0 +1,21 @@
+Recommended Architecture
+
+  Student Profile
+       │
+       ▼
+  Hard Filters (eliminate non-starters)
+       │
+       ▼
+  ┌────┴────────────────────────────┐
+  │  Structured Scoring             │  ← GPA/IELTS percentile, financial fit
+  │  Vector Search (soft factors)   │  ← program fit, interests
+  └────┬────────────────────────────┘
+       │ RRF merge
+       ▼
+  Top-N Candidates + Scores
+       │
+       ▼
+  LLM Re-ranker + Explanation Generator
+       │
+       ▼
+  Safety / Target / Reach output with reasoning

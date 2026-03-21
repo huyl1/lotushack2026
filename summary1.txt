@@ -1,0 +1,88 @@
+STUDENT RECOMMENDATION SYSTEM — SUMMARY
+========================================
+Date: 2026-03-21
+
+OVERVIEW
+--------
+Built a full AI-powered university recommendation pipeline that takes a student's
+profile from Supabase and outputs 5 Reach, 5 Match, and 5 Safety school
+recommendations with LLM-generated reasoning for each.
+
+FILES CREATED
+-------------
+1. supabase/migrations/20260322_create_recommendations.sql
+   - New `recommendations` table storing tier, score_breakdown (JSONB),
+     reasoning text, and is_dismissed flag per student-university pair.
+
+2. src/lib/recommendation/scoring.ts
+   - Pure TypeScript scoring functions for all 5 weighted criteria:
+       Academic Alignment     35% — GPA/IELTS/SAT/ACT delta vs major minimums
+       Financial Sustainability 25% — tuition/budget ratio + financial aid bonus
+       Student Success        15% — QS overall_score + employment outcomes score
+       Lifestyle / Culture    15% — country (50%), setting (30%), size (20%)
+       Admission Chance       10% — academic strength + parsed acceptance rate
+   - Outputs a composite 0–100 score per university.
+
+3. src/lib/recommendation/llm.ts
+   - Sends the top 30 pre-scored candidates to OpenRouter (claude-sonnet-4-5).
+   - LLM receives pre-computed scores so it re-ranks holistically.
+   - Returns exactly 5 universities per tier (reach/match/safety) with
+     a 2–3 sentence reasoning per school.
+   - Uses JSON response format for reliable structured output.
+
+4. src/lib/recommendation/pipeline.ts
+   - Orchestrates the full 4-phase pipeline:
+       Phase 1 — Hard Filter: Supabase query on university_majors joined
+                 with universities. Reach tolerance: ±0.5 GPA, ±1.0 IELTS,
+                 ±100 SAT, ±4 ACT. Budget cap at 150% of student budget.
+                 Reduces ~250 schools to ~50 candidates.
+       Phase 2 — Structured Scoring: Score and sort all candidates by
+                 composite weighted score.
+       Phase 3 — LLM Tiering: Top 30 candidates sent to LLM for final
+                 tier assignment and reasoning generation.
+       Phase 4 — Persist: Saves 15 recommendations to the database,
+                 replacing any prior run for that student.
+
+5. src/app/api/students/[id]/recommend/route.ts
+   - POST /api/students/[id]/recommend
+   - Auth-gated (requires logged-in user via Supabase SSR).
+   - Fetches the student's latest profile state, runs the pipeline,
+     and returns a count summary (reach/match/safety/total).
+
+ARCHITECTURE
+------------
+  Student Profile (student_states)
+         |
+         v
+  Hard Filter (eliminate non-starters via score/budget gates)
+         |
+         v
+  Structured Scoring (5-criteria weighted formula)
+         |
+         v
+  Top 30 Candidates → LLM Re-ranker (OpenRouter)
+         |
+         v
+  5 Reach + 5 Match + 5 Safety with reasoning
+         |
+         v
+  Saved to recommendations table
+
+KEY DESIGN DECISIONS
+--------------------
+- Scoring uses deltas vs minimums (not binary pass/fail), so reach schools
+  score lower but still appear — the LLM makes the final tier call.
+- Admission Chance (10%) is intentionally low-weighted in the composite score
+  but is the PRIMARY signal the LLM uses for tier classification.
+- The LLM receives pre-computed numeric scores, not raw text — this keeps
+  it grounded and prevents hallucination about admission requirements.
+- Null minimums (unknown data) default to neutral scores (50/100) rather
+  than excluding schools, preserving data coverage.
+
+NEXT STEPS TO WIRE INTO UI
+---------------------------
+- The "Run Matching" button in RecommendationsPanel already links to
+  /students/${studentId}/match — that page needs to call POST
+  /api/students/[id]/recommend and reload recommendations from Supabase.
+- Run `supabase db reset` or apply the new migration to create the
+  recommendations table in the local dev database.
