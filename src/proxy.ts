@@ -1,7 +1,14 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const protectedPrefixes = ["/dashboard", "/students"];
+const publicOnlyRoutes = ["/login"];
+
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Create a Supabase client that can read/write cookies on the response
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -25,28 +32,29 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // Refresh the session (important for Supabase SSR)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
+  const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
+  const isPublicOnly = publicOnlyRoutes.some((p) => pathname.startsWith(p));
 
-  // Protected routes — redirect to login if not authenticated
-  const isProtected =
-    pathname === "/" || pathname.startsWith("/students");
-
-  if (!user && isProtected) {
+  // Redirect unauthenticated users away from protected routes
+  if (isProtected && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect logged-in users away from /login
-  if (user && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Redirect authenticated users away from login to dashboard
+  if (isPublicOnly && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/", "/students/:path*", "/login"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+  ],
 };

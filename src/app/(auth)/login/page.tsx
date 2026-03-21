@@ -2,6 +2,12 @@
 
 import { useActionState } from "react";
 import { login, signup } from "./actions";
+import Link from "next/link";
+
+const TEST_USERS = [
+  { email: "consultant@edify.test", password: "password123", label: "Consultant" },
+  { email: "admin@edify.test", password: "password123", label: "Admin" },
+];
 
 function LoginForm() {
   const [loginState, loginAction, loginPending] = useActionState(
@@ -23,10 +29,34 @@ function LoginForm() {
   const pending = loginPending || signupPending;
   const error = loginState?.error || signupState?.error;
 
+  function fillTestUser(email: string, password: string) {
+    const emailInput = document.getElementById("email") as HTMLInputElement;
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    if (emailInput) emailInput.value = email;
+    if (passwordInput) passwordInput.value = password;
+  }
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2 animate-fade-up">
-        <h1 className="text-display">Edify</h1>
+    <div className="flex flex-col" style={{ gap: "var(--space-lg)" }}>
+      {/* Header */}
+      <div className="flex flex-col animate-fade-up" style={{ gap: "var(--space-sm)" }}>
+        <Link
+          href="/"
+          className="flex items-center gap-2 mb-4 text-caption transition-colors"
+          style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 2L3 7l5 5M3 7h10" />
+          </svg>
+          Back to home
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{ background: "var(--color-tier-match)" }}
+          />
+          <span className="text-heading tracking-tight">Edify</span>
+        </div>
         <p className="text-body-sm" style={{ color: "var(--color-text-secondary)" }}>
           Sign in to your consultant account
         </p>
@@ -37,6 +67,42 @@ function LoginForm() {
         style={{ background: "var(--color-border)", animationDelay: "50ms" }}
       />
 
+      {/* Test users */}
+      <div
+        className="flex flex-col animate-fade-up"
+        style={{ gap: "var(--space-sm)", animationDelay: "60ms" }}
+      >
+        <span
+          className="text-caption uppercase"
+          style={{ color: "var(--color-text-muted)", letterSpacing: "0.06em", fontSize: 11 }}
+        >
+          Quick login — Test accounts
+        </span>
+        <div className="flex" style={{ gap: "var(--space-sm)" }}>
+          {TEST_USERS.map((user) => (
+            <button
+              key={user.email}
+              type="button"
+              onClick={() => fillTestUser(user.email, user.password)}
+              className="flex-1 flex flex-col items-start px-3 py-2.5 text-left cursor-pointer transition-colors"
+              style={{
+                background: "var(--color-bg-elevated)",
+                border: "1px solid var(--color-border-subtle)",
+                borderRadius: "var(--radius-sm)",
+              }}
+            >
+              <span className="text-caption" style={{ color: "var(--color-text-primary)" }}>
+                {user.label}
+              </span>
+              <span className="text-mono" style={{ color: "var(--color-text-muted)", fontSize: 11 }}>
+                {user.email}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error */}
       {error && (
         <div
           className="animate-fade-up rounded-sm px-3 py-2 text-body-sm"
@@ -50,9 +116,10 @@ function LoginForm() {
         </div>
       )}
 
+      {/* Form */}
       <form>
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5 animate-fade-up" style={{ animationDelay: "80ms" }}>
+        <div className="flex flex-col" style={{ gap: "var(--space-md)" }}>
+          <div className="flex flex-col animate-fade-up" style={{ gap: 6, animationDelay: "80ms" }}>
             <label htmlFor="email" className="text-caption" style={{ color: "var(--color-text-secondary)" }}>
               Email address
             </label>
@@ -62,17 +129,17 @@ function LoginForm() {
               type="email"
               placeholder="you@example.com"
               required
-              className="h-10 px-3 text-body rounded-sm border outline-none transition-colors"
+              className="h-10 px-3 text-body outline-none transition-colors"
               style={{
                 background: "var(--color-bg-card)",
-                borderColor: "var(--color-border)",
+                border: "1px solid var(--color-border)",
                 borderRadius: "var(--radius-sm)",
                 color: "var(--color-text-primary)",
               }}
             />
           </div>
 
-          <div className="flex flex-col gap-1.5 animate-fade-up" style={{ animationDelay: "120ms" }}>
+          <div className="flex flex-col animate-fade-up" style={{ gap: 6, animationDelay: "120ms" }}>
             <label htmlFor="password" className="text-caption" style={{ color: "var(--color-text-secondary)" }}>
               Password
             </label>
@@ -82,26 +149,30 @@ function LoginForm() {
               type="password"
               placeholder="••••••••"
               required
-              className="h-10 px-3 text-body rounded-sm border outline-none transition-colors"
+              className="h-10 px-3 text-body outline-none transition-colors"
               style={{
                 background: "var(--color-bg-card)",
-                borderColor: "var(--color-border)",
+                border: "1px solid var(--color-border)",
                 borderRadius: "var(--radius-sm)",
                 color: "var(--color-text-primary)",
               }}
             />
           </div>
 
-          <div className="flex gap-3 pt-2 animate-fade-up" style={{ animationDelay: "160ms" }}>
+          <div
+            className="flex pt-1 animate-fade-up"
+            style={{ gap: "var(--space-sm)", animationDelay: "160ms" }}
+          >
             <button
               type="submit"
               disabled={pending}
               formAction={loginAction}
-              className="flex-1 h-10 rounded-sm text-subhead transition-colors cursor-pointer disabled:opacity-50"
+              className="flex-1 h-10 text-subhead transition-colors cursor-pointer disabled:opacity-50"
               style={{
                 background: "var(--color-accent)",
                 color: "var(--color-text-inverse)",
-                borderRadius: "var(--radius-xs)",
+                borderRadius: "var(--radius-sm)",
+                border: "none",
               }}
             >
               {loginPending ? "Signing in..." : "Sign in"}
@@ -110,12 +181,12 @@ function LoginForm() {
               type="submit"
               disabled={pending}
               formAction={signupAction}
-              className="flex-1 h-10 rounded-sm text-subhead border transition-colors cursor-pointer disabled:opacity-50"
+              className="flex-1 h-10 text-subhead transition-colors cursor-pointer disabled:opacity-50"
               style={{
                 background: "transparent",
                 color: "var(--color-text-primary)",
-                borderColor: "var(--color-border)",
-                borderRadius: "var(--radius-xs)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "var(--radius-sm)",
               }}
             >
               {signupPending ? "Creating..." : "Sign up"}
@@ -133,7 +204,7 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center px-6"
       style={{ background: "var(--color-bg-base)" }}
     >
-      <div className="w-full" style={{ maxWidth: 380 }}>
+      <div className="w-full" style={{ maxWidth: 400 }}>
         <LoginForm />
       </div>
     </div>

@@ -20,7 +20,7 @@ export function StudentDetailView({ student }: StudentDetailProps) {
     <div className="flex flex-col" style={{ gap: "var(--space-md)", padding: "var(--space-md)" }}>
       {/* Back link */}
       <Link
-        href="/"
+        href="/dashboard"
         className="inline-flex items-center gap-1.5 text-caption transition-colors self-start"
         style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
       >

@@ -7,7 +7,7 @@ import { signout } from "@/app/(auth)/login/actions";
 const navItems = [
   {
     label: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1.5" y="1.5" width="5" height="5" rx="1" />
@@ -62,8 +62,8 @@ export function Sidebar() {
       <nav className="flex-1 py-2 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
 
           return (
