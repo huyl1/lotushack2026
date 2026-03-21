@@ -23,6 +23,9 @@ Path alias: `@/*` maps to `./src/*`
 ## Commands
 
 - `npm run dev` — Start dev server
+- `npm run supabase:start` / `supabase:stop` / `supabase:status` — Local Supabase (Docker)
+- `npm run supabase:migration:new -- <name>` — New SQL migration under `supabase/migrations/`
+- `npm run supabase:db:reset` — Apply migrations + `supabase/seed.sql` to local DB
 - `npm run build` — Production build
 - `npm run start` — Start production server
 - `npm run lint` — Run ESLint

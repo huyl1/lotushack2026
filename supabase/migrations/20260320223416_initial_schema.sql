@@ -1,0 +1,1 @@
+-- Initial schema. Add CREATE TABLE and related DDL here.

@@ -1,0 +1,2 @@
+-- Seed data runs after migrations on `supabase db reset`.
+-- Add INSERT statements or COPY here when you need repeatable test data.
