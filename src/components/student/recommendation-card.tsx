@@ -1,12 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import type { Recommendation } from "@/lib/supabase/types";
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
-  studentId: string;
 }
+
+const SCORE_KEYS = ["academic_alignment", "financial_sustainability", "student_success", "lifestyle_culture", "admission_chance"] as const;
+
+const SCORE_LABELS: { key: (typeof SCORE_KEYS)[number]; label: string }[] = [
+  { key: "academic_alignment", label: "Academic" },
+  { key: "financial_sustainability", label: "Financial" },
+  { key: "student_success", label: "Success" },
+  { key: "lifestyle_culture", label: "Lifestyle" },
+  { key: "admission_chance", label: "Admission" },
+];
+
 
 function MiniScore({ label, score }: { label: string; score: number }) {
   let color = "var(--color-text-muted)";
@@ -16,11 +25,11 @@ function MiniScore({ label, score }: { label: string; score: number }) {
 
   return (
     <div className="flex items-center" style={{ gap: 4 }}>
-      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 22, flexShrink: 0 }}>
+      <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 52, flexShrink: 0 }}>
         {label}
       </span>
-      <div className="flex-1" style={{ height: 3, borderRadius: 2, background: "var(--color-border)" }}>
-        <div style={{ height: "100%", width: `${score}%`, borderRadius: 2, background: color }} />
+      <div className="flex-1" style={{ height: 6, borderRadius: 3, background: "var(--color-border)" }}>
+        <div style={{ height: "100%", width: `${score}%`, borderRadius: 3, background: color }} />
       </div>
       <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color, width: 20, textAlign: "right", flexShrink: 0 }}>
         {score}
@@ -29,23 +38,23 @@ function MiniScore({ label, score }: { label: string; score: number }) {
   );
 }
 
-// Composite score color matches tier: green (safety 70+), indigo (match 45-69), amber (reach <45)
 function getCompositeColor(composite: number) {
   if (composite >= 70) return { bg: "var(--color-stage-matched-dim)", fg: "var(--color-stage-matched)" };
   if (composite >= 45) return { bg: "var(--color-stage-new-dim)", fg: "var(--color-stage-new)" };
   return { bg: "var(--color-stage-building-dim)", fg: "var(--color-stage-building)" };
 }
 
-export function RecommendationCard({ recommendation: rec, studentId }: RecommendationCardProps) {
-  const { university: u, score: s } = rec;
-  const { bg, fg } = getCompositeColor(s.composite);
+export function RecommendationCard({ recommendation: rec }: RecommendationCardProps) {
+  const u = rec.university;
+  const composite = Math.round(Number(rec.composite_score ?? 0));
+  const { bg, fg } = getCompositeColor(composite);
 
-  const meta = [
-    u.qs_rank ? `#${u.qs_rank}` : null,
-    u.country,
-    u.overall_acceptance_rate,
-    u.tuition_usd ? `$${Math.round(u.tuition_usd / 1000)}k` : null,
-  ].filter(Boolean).join("  ·  ");
+  // Extract a short acceptance rate (strip long descriptions)
+  const acceptanceShort = u?.overall_acceptance_rate
+    ? u.overall_acceptance_rate.length > 10
+      ? u.overall_acceptance_rate.match(/[\d.]+%/)?.[0] ?? u.overall_acceptance_rate.slice(0, 10)
+      : u.overall_acceptance_rate
+    : null;
 
   return (
     <div
@@ -65,53 +74,34 @@ export function RecommendationCard({ recommendation: rec, studentId }: Recommend
           style={{ width: 40, height: 40, borderRadius: "var(--radius-xs)", background: bg }}
         >
           <span style={{ fontSize: 16, fontWeight: 700, fontFamily: "var(--font-mono)", color: fg }}>
-            {s.composite}
+            {composite}
           </span>
         </div>
         <span
           className="flex-1"
           style={{ fontSize: 13, fontWeight: 600, fontFamily: "var(--font-sans)", color: "var(--color-text-primary)", lineHeight: 1.3, paddingTop: 2 }}
         >
-          {u.name}
+          {u?.name ?? "Unknown University"}
         </span>
       </div>
 
-      {/* Info line */}
-      <div className="px-3 pb-2">
-        <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
-          {meta}
+      {/* Info lines */}
+      <div className="px-3 pb-2 flex flex-col" style={{ gap: 2 }}>
+        <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+          {[u?.qs_rank ? `Rank #${u.qs_rank}` : null, u?.country].filter(Boolean).join("  ·  ") || "—"}
+        </span>
+        <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+          {[acceptanceShort ? `AR ${acceptanceShort}` : null, u?.tuition_usd ? `Fee $${Math.round(u.tuition_usd / 1000)}k/yr` : null].filter(Boolean).join("  ·  ") || "—"}
         </span>
       </div>
 
       {/* Mini scores */}
       <div className="px-3 pb-3 flex flex-col" style={{ gap: 4 }}>
-        <MiniScore label="AF" score={s.sections.academicFit.score} />
-        <MiniScore label="MA" score={s.sections.majorAlignment.score} />
-        <MiniScore label="FF" score={s.sections.financialFit.score} />
-        <MiniScore label="PM" score={s.sections.preferenceMatch.score} />
-        <MiniScore label="AD" score={s.sections.admissibility.score} />
+        {SCORE_LABELS.map(({ key, label }) => (
+          <MiniScore key={key} label={label} score={Number(rec[key] ?? 0)} />
+        ))}
       </div>
 
-      {/* View details link */}
-      <Link
-        href={`/students/${studentId}/match/${rec.id}`}
-        className="flex items-center justify-between px-3 py-2 transition-colors"
-        style={{
-          fontSize: 12,
-          fontFamily: "var(--font-sans)",
-          fontWeight: 500,
-          color: "var(--color-text-muted)",
-          textDecoration: "none",
-          borderTop: "1px solid var(--color-border-subtle)",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text-primary)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-muted)"; }}
-      >
-        <span>View details</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4.5 2l4 4-4 4" />
-        </svg>
-      </Link>
     </div>
   );
 }

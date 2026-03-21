@@ -3,8 +3,12 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Panel } from "@/components/ui/panel";
-import { getStudentsWithLatestState } from "@/lib/data/mock";
 import type { StudentStage } from "@/lib/supabase/types";
+
+interface PanelStagePipelineProps {
+  stageCounts: Record<string, number>;
+  total: number;
+}
 
 const STAGES: { key: StudentStage; label: string; color: string }[] = [
   { key: "new", label: "New", color: "#6366f1" },
@@ -54,18 +58,15 @@ function renderLabel(props: any) {
   );
 }
 
-export function PanelStagePipeline() {
-  const students = useMemo(() => getStudentsWithLatestState(), []);
+export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelineProps) {
 
   const data = useMemo(() => {
     return STAGES.map((stage) => ({
       name: stage.label,
-      value: students.filter((s) => s.stage === stage.key).length,
+      value: stageCounts[stage.key] ?? 0,
       color: stage.color,
     })).filter((d) => d.value > 0);
-  }, [students]);
-
-  const total = students.filter((s) => s.stage !== "archived").length;
+  }, [stageCounts]);
 
   const legend = (
     <div className="flex flex-wrap items-center" style={{ gap: "6px 12px" }}>

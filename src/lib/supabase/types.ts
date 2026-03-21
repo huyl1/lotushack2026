@@ -99,37 +99,28 @@ export interface Tag {
 }
 
 /* ============================================================
-   Recommendation Types — algorithm-agnostic contract
+   Recommendation — matches DB recommendations table
    ============================================================ */
 
 export type Tier = "reach" | "match" | "safety";
 
-export interface ScoreSection {
-  score: number; // 0-100
-  summary: string;
-}
-
-export interface RecommendationScore {
-  sections: {
-    academicFit: ScoreSection;
-    majorAlignment: ScoreSection;
-    financialFit: ScoreSection;
-    preferenceMatch: ScoreSection;
-    admissibility: ScoreSection;
-  };
-  composite: number; // 0-100
-  tier: Tier;
-  reasoning: string; // AI-generated narrative
-}
-
 export interface Recommendation {
   id: string;
-  student_id: string;
-  university: University;
-  major: Major | null;
-  score: RecommendationScore;
-  is_dismissed: boolean;
+  student_state_id: string;
+  major_id: string;
+  match_category: Tier;
+  description: string | null;
+  // Weighted score components (each 0-100)
+  academic_alignment: number | null;        // 35%
+  financial_sustainability: number | null;  // 25%
+  student_success: number | null;           // 15%
+  lifestyle_culture: number | null;         // 15%
+  admission_chance: number | null;          // 10%
+  composite_score: number | null;           // Generated: AA×35% + FS×25% + SS×15% + LC×15% + AC×10%
   created_at: string;
+  // Joined fields (from query)
+  university?: University;
+  major?: Major;
 }
 
 /* ============================================================
@@ -141,8 +132,18 @@ export interface StudentWithLatestState extends Student {
   state_count: number;
 }
 
+export interface InferenceRun {
+  state_id: string;
+  created_at: string;
+  sat_score: number | null;
+  act_score: number | null;
+  gpa: number | null;
+  ielts_score: number | null;
+  rec_count: number;
+}
+
 export interface StudentDetail extends Student {
   states: StudentState[];
-  recommendations: Recommendation[];
+  inference_runs: InferenceRun[];
   tags: Tag[];
 }

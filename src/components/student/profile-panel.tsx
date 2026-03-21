@@ -1,59 +1,190 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import { Panel } from "@/components/ui/panel";
-import type { StudentState } from "@/lib/supabase/types";
+import { EmptyState } from "@/components/ui/empty-state";
+import { relativeTime } from "@/lib/utils/time";
+import type { StudentState, Tag } from "@/lib/supabase/types";
 
 interface ProfilePanelProps {
   state: StudentState | null;
+  tags: Tag[];
 }
 
-function ProfileItem({ label, value }: { label: string; value: string | null | undefined }) {
+function ScoreItem({ label, value }: { label: string; value: string | number | null }) {
+  const display = value != null ? String(value) : "—";
+  const hasValue = value != null;
   return (
-    <div
-      className="flex flex-col p-3"
-      style={{
-        gap: 2,
-        background: "var(--color-bg-wash)",
-        borderRadius: "var(--radius-xs)",
-      }}
-    >
-      <span className="text-caption" style={{ color: "var(--color-text-muted)" }}>{label}</span>
-      <span className="text-mono-lg" style={{ color: value ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
-        {value || "—"}
+    <div className="flex flex-col" style={{ gap: 2 }}>
+      <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {label}
+      </span>
+      <span style={{ fontSize: 20, fontFamily: "var(--font-mono)", fontWeight: 600, color: hasValue ? "var(--color-text-primary)" : "var(--color-text-muted)" }}>
+        {display}
       </span>
     </div>
   );
 }
 
-export function ProfilePanel({ state }: ProfilePanelProps) {
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-1.5" style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
+      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>{label}</span>
+      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
+    </div>
+  );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        padding: "3px 10px",
+        fontSize: 12,
+        fontFamily: "var(--font-sans)",
+        fontWeight: 500,
+        color: "var(--color-text-secondary)",
+        background: "var(--color-hover-bg)",
+        borderRadius: "var(--radius-xs)",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function PreferenceRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex items-center py-1.5" style={{ gap: 8, borderBottom: "1px solid var(--color-border-subtle)" }}>
+      <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{icon}</span>
+      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", minWidth: 60 }}>{label}</span>
+      <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-primary)" }}>{value}</span>
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ fontSize: 11, fontFamily: "var(--font-sans)", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+      {children}
+    </span>
+  );
+}
+
+export function ProfilePanel({ state, tags }: ProfilePanelProps) {
+  const [tab, setTab] = useState<"scores" | "preferences" | "tags">("scores");
+
+  const groupedTags = useMemo(() => {
+    const groups = new Map<string, Tag[]>();
+    for (const tag of tags) {
+      const cat = tag.category ?? "Other";
+      const arr = groups.get(cat) ?? [];
+      arr.push(tag);
+      groups.set(cat, arr);
+    }
+    return groups;
+  }, [tags]);
+
   if (!state) {
     return (
-      <Panel title="Profile" dotColor="var(--color-accent)">
-        <div className="flex items-center justify-center py-6">
-          <span className="text-body-sm" style={{ color: "var(--color-text-muted)" }}>
-            No profile data yet. Add scores to get started.
-          </span>
-        </div>
+      <Panel title="Student Profile" dotColor="var(--color-accent)">
+        <EmptyState
+          title="No profile data yet"
+          description="Add scores and preferences to get started."
+        />
       </Panel>
     );
   }
 
   return (
-    <Panel title="Profile" dotColor="var(--color-accent)">
-      <div className="grid grid-cols-2" style={{ gap: "var(--space-sm)" }}>
-        <ProfileItem label="Target Majors" value={state.target_majors?.join(", ")} />
-        <ProfileItem label="Application Round" value={state.application_round} />
-        <ProfileItem label="Preferred Countries" value={state.preferred_countries?.join(", ")} />
-        <ProfileItem
-          label="Budget"
-          value={state.budget_usd ? `$${Math.round(state.budget_usd / 1000)}k/year` : null}
-        />
-        <ProfileItem label="Campus Setting" value={state.preferred_setting} />
-        <ProfileItem label="Financial Aid" value={state.needs_financial_aid ? "Needed" : state.needs_financial_aid === false ? "Not needed" : null} />
-        <ProfileItem label="Campus Size" value={state.preferred_size} />
-        <ProfileItem
-          label="Min Acceptance Rate"
-          value={state.target_acceptance_rate_min ? `${state.target_acceptance_rate_min}%+` : null}
-        />
-      </div>
+    <Panel
+      title="Student Profile"
+      dotColor="var(--color-accent)"
+      tabs={["Scores", "Preferences", "Tags"]}
+      activeTab={tab === "scores" ? "Scores" : tab === "preferences" ? "Preferences" : "Tags"}
+      onTabChange={(t) => setTab(t === "Scores" ? "scores" : t === "Preferences" ? "preferences" : "tags")}
+      footer={
+        <span style={{ fontSize: 12, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+          Last updated: {relativeTime(state.created_at)}
+        </span>
+      }
+    >
+      {tab === "scores" ? (
+        <div className="flex flex-col" style={{ gap: "var(--space-md)" }}>
+          {/* Test Scores */}
+          <div>
+            <SectionLabel>Test Scores</SectionLabel>
+            <div className="grid mt-2" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-sm)" }}>
+              <ScoreItem label="SAT" value={state.sat_score} />
+              <ScoreItem label="ACT" value={state.act_score} />
+              <ScoreItem label="GPA" value={state.gpa != null ? Number(state.gpa).toFixed(2) : null} />
+              <ScoreItem label="IELTS" value={state.ielts_score != null ? Number(state.ielts_score).toFixed(1) : null} />
+            </div>
+          </div>
+
+          {/* Application Details */}
+          <div className="flex flex-col">
+            <SectionLabel>Application</SectionLabel>
+            <div style={{ marginTop: 4 }}>
+              <InfoRow label="Round" value={state.application_round ?? "—"} />
+              <InfoRow label="Budget" value={state.budget_usd != null ? `$${Math.round(Number(state.budget_usd) / 1000)}k/year` : "—"} />
+              <InfoRow label="Financial Aid" value={state.needs_financial_aid ? "Yes" : state.needs_financial_aid === false ? "No" : "—"} />
+              <InfoRow label="Min Acceptance" value={state.target_acceptance_rate_min != null ? `${state.target_acceptance_rate_min}%+` : "—"} />
+            </div>
+          </div>
+        </div>
+      ) : tab === "preferences" ? (
+        <div className="flex flex-col" style={{ gap: "var(--space-md)" }}>
+          {/* Target Majors */}
+          {state.target_majors?.length ? (
+            <div>
+              <SectionLabel>Target Majors</SectionLabel>
+              <div className="flex flex-wrap mt-1.5" style={{ gap: 6 }}>
+                {state.target_majors.map((m) => <Chip key={m}>{m}</Chip>)}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Countries */}
+          {state.preferred_countries?.length ? (
+            <div>
+              <SectionLabel>Preferred Countries</SectionLabel>
+              <div className="flex flex-wrap mt-1.5" style={{ gap: 6 }}>
+                {state.preferred_countries.map((c) => <Chip key={c}>{c}</Chip>)}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Campus Preferences */}
+          <div>
+            <SectionLabel>Campus</SectionLabel>
+            <div style={{ marginTop: 4 }}>
+              <PreferenceRow icon="🏙" label="Setting" value={state.preferred_setting ?? "—"} />
+              <PreferenceRow icon="🏫" label="Size" value={state.preferred_size ?? "—"} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        tags.length === 0 ? (
+          <EmptyState title="No tags assigned" description="Assign tags to improve preference matching." />
+        ) : (
+          <div className="flex flex-col" style={{ gap: "var(--space-md)" }}>
+            {Array.from(groupedTags.entries()).map(([category, catTags]) => (
+              <div key={category}>
+                <SectionLabel>{category}</SectionLabel>
+                <div className="flex flex-wrap mt-1.5" style={{ gap: 6 }}>
+                  {catTags.map((tag) => (
+                    <Chip key={tag.id}>
+                      {tag.emoji ? `${tag.emoji} ` : ""}{tag.name}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
     </Panel>
   );
 }

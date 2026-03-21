@@ -51,23 +51,6 @@ export function StudentBanner({ student }: StudentHeaderProps) {
             </svg>
             Run Matching
           </Link>
-          <Link
-            href={`/students/${student.id}/present`}
-            className="inline-flex items-center gap-2 px-4 h-9 transition-colors"
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(8px)",
-              color: "rgba(255,255,255,0.8)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "var(--radius-xs)",
-              fontFamily: "var(--font-sans)",
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            Present
-          </Link>
         </div>
       }
       secondaryMeta={<StageBadge stage={student.stage} />}

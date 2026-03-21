@@ -3,18 +3,26 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Panel } from "@/components/ui/panel";
-import { PageGrid, type LayoutItem } from "@/components/ui/page-grid";
 import { StageBadge } from "@/components/ui/badges";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatCard } from "@/components/ui/stat-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { PageBanner } from "@/components/ui/page-banner";
-import { PanelRecentStudents } from "./panel-recent-students";
+import { PanelActionQueue } from "./panel-action-queue";
 import { PanelStagePipeline } from "./panel-stage-pipeline";
-import { PanelScoreDistribution } from "./panel-score-distribution";
-import { PanelGeography } from "./panel-geography";
-import { getStudentsWithLatestState, getDashboardStats } from "@/lib/data/mock";
 import { relativeTime } from "@/lib/utils/time";
+import type { StudentWithLatestState } from "@/lib/supabase/types";
+
+interface DashboardContentProps {
+  students: StudentWithLatestState[];
+  stats: {
+    total: number;
+    inProgress: number;
+    needsAttention: number;
+    readyToPresent: number;
+    stageCounts: Record<string, number>;
+  };
+}
 
 const STAGE_TABS = [
   { key: "all", label: "All" },
@@ -33,31 +41,8 @@ function formatCountries(countries: string[] | null): string {
   return `${countries[0]}, ${countries[1]} +${countries.length - 2}`;
 }
 
-/* ─── Grid Layout ─── */
-// Row height = 32px
-const dashboardLayout: LayoutItem[] = [
-  // Banner — full width, 3 rows (96px)
-  { i: "banner",          x: 0,  y: 0, w: 12, h: 3 },
-  // Overview section
-  { i: "hdr-overview",    x: 0,  y: 3, w: 12, h: 1, isResizable: false },
-  { i: "stat-total",      x: 0,  y: 4, w: 3,  h: 3 },
-  { i: "stat-active",     x: 3,  y: 4, w: 3,  h: 3 },
-  { i: "stat-attention",  x: 6,  y: 4, w: 3,  h: 3 },
-  { i: "stat-recent",     x: 9,  y: 4, w: 3,  h: 3 },
-  // Analytics panels
-  { i: "panel-recent",    x: 0,  y: 7, w: 3,  h: 8 },
-  { i: "panel-pipeline",  x: 3,  y: 7, w: 3,  h: 8 },
-  { i: "panel-scores",    x: 6,  y: 7, w: 3,  h: 8 },
-  { i: "panel-geo",       x: 9,  y: 7, w: 3,  h: 8 },
-  // Students section
-  { i: "hdr-students",    x: 0,  y: 15, w: 12, h: 1, isResizable: false },
-  { i: "panel-students",  x: 0,  y: 16, w: 12, h: 20 },
-];
-
-export function DashboardContent() {
+export function DashboardContent({ students, stats }: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
-  const students = useMemo(() => getStudentsWithLatestState(), []);
-  const stats = useMemo(() => getDashboardStats(), []);
 
   const filteredStudents = useMemo(() => {
     const filtered =
@@ -73,7 +58,6 @@ export function DashboardContent() {
 
   const activeCount = filteredStudents.length;
 
-  // Filter tabs rendered in panel header
   const filterTabs = (
     <div className="flex items-center" style={{ gap: "2px" }}>
       {STAGE_TABS.map((tab) => {
@@ -89,26 +73,17 @@ export function DashboardContent() {
             onClick={() => setActiveFilter(tab.key)}
             className="px-2.5 py-1 text-caption cursor-pointer transition-colors"
             style={{
-              color: isActive
-                ? "var(--color-text-primary)"
-                : "var(--color-text-muted)",
-              background: isActive
-                ? "var(--color-hover-bg-strong)"
-                : "transparent",
+              color: isActive ? "var(--color-text-primary)" : "var(--color-text-muted)",
+              background: isActive ? "var(--color-hover-bg-strong)" : "transparent",
               borderRadius: "var(--radius-xs)",
               fontWeight: isActive ? 600 : 500,
+              border: "none",
             }}
           >
             {tab.label}
             <span
               className="ml-1 text-mono"
-              style={{
-                fontSize: 12,
-                color: isActive
-                  ? "var(--color-text-secondary)"
-                  : "var(--color-text-muted)",
-                opacity: 0.7,
-              }}
+              style={{ fontSize: 12, color: isActive ? "var(--color-text-secondary)" : "var(--color-text-muted)", opacity: 0.7 }}
             >
               {count}
             </span>
@@ -118,9 +93,9 @@ export function DashboardContent() {
     </div>
   );
 
-  const widgets: Record<string, React.ReactNode> = {
-    /* ─── Banner ─── */
-    "banner": (
+  return (
+    <div className="flex flex-col" style={{ gap: "var(--space-md)", padding: "var(--space-md)" }}>
+      {/* Banner */}
       <PageBanner
         title="Dashboard"
         subtitle={`${stats.total} students across your caseload`}
@@ -147,34 +122,24 @@ export function DashboardContent() {
           </Link>
         }
       />
-    ),
 
-    /* ─── Stats ─── */
-    "stat-total": (
-      <StatCard label="Total Students" value={stats.total} dotColor="var(--color-text-primary)" subtext="all active" />
-    ),
-    "stat-active": (
-      <StatCard label="Active" value={stats.active} dotColor="var(--color-tier-match)" subtext="building + matched" />
-    ),
-    "stat-attention": (
-      <StatCard label="Needs Attention" value={stats.needsAttention} dotColor="var(--color-warning)" subtext="stale > 14 days" />
-    ),
-    "stat-recent": (
-      <StatCard label="Recently Active" value={stats.recentlyActive} dotColor="var(--color-info)" subtext="last 7 days" />
-    ),
+      {/* Stats Row */}
+      <SectionHeader title="Overview" />
+      <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--space-md)" }}>
+        <StatCard label="Total Students" value={stats.total} dotColor="var(--color-text-primary)" subtext="all active" />
+        <StatCard label="In Progress" value={stats.inProgress} dotColor="var(--color-tier-match)" subtext="building + matched" />
+        <StatCard label="Needs Attention" value={stats.needsAttention} dotColor="var(--color-warning)" subtext="no update in 2+ weeks" />
+        <StatCard label="Ready to Present" value={stats.readyToPresent} dotColor="var(--color-info)" subtext="matched students" />
+      </div>
 
-    /* ─── Section Headers ─── */
-    "hdr-overview": <SectionHeader title="Overview" />,
-    "hdr-students": <SectionHeader title="Students" count={activeCount} />,
+      {/* Action Queue + Pipeline */}
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", height: 340 }}>
+        <PanelActionQueue students={students} />
+        <PanelStagePipeline stageCounts={stats.stageCounts} total={stats.total} />
+      </div>
 
-    /* ─── Analytics Panels ─── */
-    "panel-recent": <PanelRecentStudents />,
-    "panel-pipeline": <PanelStagePipeline />,
-    "panel-scores": <PanelScoreDistribution />,
-    "panel-geo": <PanelGeography />,
-
-    /* ─── Student List ─── */
-    "panel-students": (
+      {/* Student Table */}
+      <SectionHeader title="Students" count={activeCount} />
       <Panel
         title="All Students"
         dotColor="var(--color-accent)"
@@ -220,28 +185,26 @@ export function DashboardContent() {
           </div>
         ) : (
           <div>
-            {/* Column Headers */}
             <div
               className="grid items-center px-4 py-2"
               style={{
-                gridTemplateColumns: "1.8fr 0.6fr 0.7fr 0.6fr 0.6fr 0.8fr 0.8fr 0.7fr",
+                gridTemplateColumns: "2fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.7fr 0.6fr",
                 gap: "var(--space-sm)",
                 borderBottom: "1px solid var(--color-border)",
                 background: "var(--color-bg-wash)",
               }}
             >
-              {["Name", "Grade", "SAT/ACT", "GPA", "IELTS", "Countries", "Stage", "Updated"].map((col) => (
+              {["Name", "Grade", "SAT", "ACT", "GPA", "IELTS", "Stage", "Updated"].map((col) => (
                 <span
                   key={col}
-                  className={`text-caption uppercase ${col === "Updated" ? "text-right" : ""}`}
-                  style={{ color: "var(--color-text-muted)", letterSpacing: "0.06em", fontSize: 12 }}
+                  className="text-caption uppercase"
+                  style={{ color: "var(--color-text-muted)", letterSpacing: "0.06em", fontSize: 12, textAlign: col === "Name" ? "left" : "right" }}
                 >
                   {col}
                 </span>
               ))}
             </div>
 
-            {/* Student Rows */}
             {filteredStudents.map((student, index) => {
               const ls = student.latest_state;
               const latestDate = ls ? ls.created_at : student.created_at;
@@ -252,42 +215,49 @@ export function DashboardContent() {
                   href={`/students/${student.id}`}
                   className="grid items-center px-4 py-3 transition-colors group"
                   style={{
-                    gridTemplateColumns: "1.8fr 0.6fr 0.7fr 0.6fr 0.6fr 0.8fr 0.8fr 0.7fr",
+                    gridTemplateColumns: "2fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.7fr 0.6fr",
                     gap: "var(--space-sm)",
-                    borderBottom:
-                      index < filteredStudents.length - 1
-                        ? "1px solid var(--color-border-subtle)"
-                        : "none",
+                    borderBottom: index < filteredStudents.length - 1 ? "1px solid var(--color-border-subtle)" : "none",
+                    textDecoration: "none",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--color-hover-bg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-hover-bg)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span className="text-body truncate" style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>
-                    {student.name}
-                  </span>
-                  <span className="text-mono" style={{ color: "var(--color-text-secondary)" }}>
+                  <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
+                    <div
+                      className="shrink-0 flex items-center justify-center"
+                      style={{
+                        width: 28, height: 28, borderRadius: "var(--radius-full)",
+                        background: "var(--color-hover-bg-strong)",
+                        fontSize: 11, fontWeight: 600, fontFamily: "var(--font-sans)",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      {student.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                    </div>
+                    <span className="text-body truncate" style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>
+                      {student.name}
+                    </span>
+                  </div>
+                  <span className="text-mono" style={{ textAlign: "right", color: "var(--color-text-secondary)" }}>
                     {student.grade || "—"}
                   </span>
-                  <span className="text-mono" style={{ color: ls?.sat_score || ls?.act_score ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
-                    {ls?.sat_score ? ls.sat_score : ls?.act_score ? `ACT ${ls.act_score}` : "—"}
+                  <span className="text-mono" style={{ textAlign: "right", color: ls?.sat_score ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
+                    {ls?.sat_score ?? "—"}
                   </span>
-                  <span className="text-mono" style={{ color: ls?.gpa ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
-                    {ls?.gpa ? ls.gpa.toFixed(2) : "—"}
+                  <span className="text-mono" style={{ textAlign: "right", color: ls?.act_score ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
+                    {ls?.act_score ?? "—"}
                   </span>
-                  <span className="text-mono" style={{ color: ls?.ielts_score ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
-                    {ls?.ielts_score ? ls.ielts_score.toFixed(1) : "—"}
+                  <span className="text-mono" style={{ textAlign: "right", color: ls?.gpa ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
+                    {ls?.gpa ? Number(ls.gpa).toFixed(2) : "—"}
                   </span>
-                  <span className="text-caption truncate" style={{ color: ls?.preferred_countries ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
-                    {formatCountries(ls?.preferred_countries ?? null)}
+                  <span className="text-mono" style={{ textAlign: "right", color: ls?.ielts_score ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}>
+                    {ls?.ielts_score ? Number(ls.ielts_score).toFixed(1) : "—"}
                   </span>
-                  <div>
+                  <div style={{ textAlign: "right" }}>
                     <StageBadge stage={student.stage} />
                   </div>
-                  <span className="text-mono text-right" style={{ color: "var(--color-text-muted)" }}>
+                  <span className="text-mono" style={{ textAlign: "right", color: "var(--color-text-muted)" }}>
                     {relativeTime(latestDate)}
                   </span>
                 </Link>
@@ -296,16 +266,6 @@ export function DashboardContent() {
           </div>
         )}
       </Panel>
-    ),
-  };
-
-  return (
-    <div>
-      <PageGrid
-        storageKey="edify-dashboard"
-        defaultLayout={dashboardLayout}
-        widgets={widgets}
-      />
     </div>
   );
 }

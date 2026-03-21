@@ -8,11 +8,12 @@ interface StatCardProps {
 export function StatCard({ label, value, subtext, dotColor }: StatCardProps) {
   return (
     <div
-      className="flex flex-col justify-between p-4 h-full"
+      className="flex flex-col p-4 h-full"
       style={{
         background: "var(--color-bg-card)",
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-sm)",
+        gap: 4,
       }}
     >
       <div className="flex items-center gap-2">
@@ -26,9 +27,20 @@ export function StatCard({ label, value, subtext, dotColor }: StatCardProps) {
           {label}
         </span>
       </div>
-      <span className="text-display">{value}</span>
-      <span className="text-mono" style={{ color: "var(--color-text-muted)" }}>
+      <span className="text-mono" style={{ color: "var(--color-text-muted)", fontSize: 11 }}>
         {subtext || "\u00A0"}
+      </span>
+      <span
+        style={{
+          fontSize: 36,
+          fontWeight: 700,
+          fontFamily: "var(--font-display)",
+          color: dotColor || "var(--color-text-primary)",
+          lineHeight: 1,
+          marginTop: 4,
+        }}
+      >
+        {value}
       </span>
     </div>
   );

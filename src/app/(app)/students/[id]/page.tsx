@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getStudentDetail } from "@/lib/data/mock";
+import { getStudentDetail } from "@/lib/data/queries";
 import { StudentDetailView } from "@/components/student/student-detail";
 
 export default async function StudentDetailPage({
@@ -8,7 +8,7 @@ export default async function StudentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const student = getStudentDetail(id);
+  const student = await getStudentDetail(id);
 
   if (!student) {
     notFound();
