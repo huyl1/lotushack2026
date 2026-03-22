@@ -5,10 +5,9 @@ import { createServerClient } from "@supabase/ssr";
 const protectedPrefixes = ["/dashboard", "/students"];
 const publicOnlyRoutes = ["/login"];
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Create a Supabase client that can read/write cookies on the response
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -29,10 +28,9 @@ export async function proxy(request: NextRequest) {
           }
         },
       },
-    }
+    },
   );
 
-  // Refresh the session (important for Supabase SSR)
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -40,12 +38,10 @@ export async function proxy(request: NextRequest) {
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
   const isPublicOnly = publicOnlyRoutes.some((p) => pathname.startsWith(p));
 
-  // Redirect unauthenticated users away from protected routes
   if (isProtected && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect authenticated users away from login to dashboard
   if (isPublicOnly && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }

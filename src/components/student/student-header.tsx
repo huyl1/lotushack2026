@@ -69,13 +69,15 @@ export function StudentBanner({ student }: StudentHeaderProps) {
         />
       </div>
 
-      <AddSnapshotDialog
-        studentId={student.id}
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        lastSnapshot={student.states[student.states.length - 1] ?? null}
-        currentGrade={student.grade}
-      />
+      {dialogOpen && (
+        <AddSnapshotDialog
+          studentId={student.id}
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          lastSnapshot={student.states[student.states.length - 1] ?? null}
+          currentGrade={student.grade}
+        />
+      )}
     </>
   );
 }

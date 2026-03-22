@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@/components/ui/dialog";
 import { createStudent } from "@/app/(app)/dashboard/actions";
@@ -105,18 +105,6 @@ export function NewStudentDialog({ open, onClose }: NewStudentDialogProps) {
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      setMode(null);
-      setStep(1);
-      setError(null);
-      setName(""); setGrade(""); setDob("");
-      setSat(""); setAct(""); setGpa(""); setIelts("");
-      setBudget(""); setFinancialAid(""); setMinAcceptance("");
-      setMajors([]); setCountries([]); setSetting(""); setSize("");
-    }
-  }, [open]);
 
   const save = (withSnapshot: boolean) => {
     if (!name.trim()) { setError("Name is required"); return; }

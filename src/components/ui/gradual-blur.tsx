@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import * as math from "mathjs";
 
 type Position = "top" | "bottom" | "left" | "right";
 type CurveType = "linear" | "bezier" | "ease-in" | "ease-out" | "ease-in-out";
@@ -75,7 +74,7 @@ export function GradualBlur({
       progress = curveFunc(progress);
 
       const blurValue = exponential
-        ? (math.pow(2, progress * 4) as number) * 0.0625 * strength
+        ? Math.pow(2, progress * 4) * 0.0625 * strength
         : 0.0625 * (progress * divCount + 1) * strength;
 
       const p1 = Math.round((increment * i - increment) * 10) / 10;
