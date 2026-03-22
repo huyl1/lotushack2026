@@ -279,7 +279,9 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
         )}
       </Panel>
 
-      <NewStudentDialog open={newStudentOpen} onClose={() => setNewStudentOpen(false)} />
+      {newStudentOpen && (
+        <NewStudentDialog open={newStudentOpen} onClose={() => setNewStudentOpen(false)} />
+      )}
     </div>
   );
 }

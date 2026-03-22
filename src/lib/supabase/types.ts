@@ -161,3 +161,46 @@ export interface StudentDetail extends Student {
   inference_runs: InferenceRun[];
   tags: Tag[];
 }
+
+/* ============================================================
+   Meetings — matches meetings / meeting_utterances / meeting_sentiments
+   ============================================================ */
+
+export type MeetingStatus = "waiting" | "active" | "ended";
+
+export interface Meeting {
+  id: string;
+  student_id: string | null;
+  title: string;
+  language: string;
+  status: MeetingStatus;
+  host_name: string | null;
+  created_by: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+}
+
+export interface MeetingUtterance {
+  id: string;
+  meeting_id: string;
+  role: "host" | "guest";
+  speaker: string | null;
+  text: string;
+  raw_text: string | null;
+  timestamp_ms: number;
+  created_at: string;
+}
+
+export interface MeetingSentiment {
+  id: string;
+  meeting_id: string;
+  target_role: "guest" | "host";
+  sentiment: "positive" | "neutral" | "negative";
+  confidence: number;
+  emotions: string[] | null;
+  reasoning: string | null;
+  window_start_ms: number | null;
+  window_end_ms: number | null;
+  created_at: string;
+}

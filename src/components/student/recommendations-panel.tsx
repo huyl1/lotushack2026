@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RecommendationCard } from "./recommendation-card";
+import { Panel } from "@/components/ui/panel";
 import type { Recommendation, StudentState } from "@/lib/supabase/types";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { RecommendationCard } from "./recommendation-card";
 type FilterKey = "all" | Recommendation["match_category"];
 
 interface RecommendationsPanelProps {
@@ -13,7 +14,12 @@ interface RecommendationsPanelProps {
   studentId: string;
   basedOnState?: StudentState | null;
   /** All states that have recommendations (for the inference selector) */
-  statesWithRecs?: { id: string; created_at: string; sat_score: number | null; gpa: number | null }[];
+  statesWithRecs?: {
+    id: string;
+    created_at: string;
+    sat_score: number | null;
+    gpa: number | null;
+  }[];
   /** Callback when user selects a different inference run */
   onStateChange?: (stateId: string) => void;
 }
@@ -25,15 +31,28 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "safety", label: "Safety" },
 ];
 
-function formatStateLabel(s: { created_at: string; sat_score: number | null; gpa: number | null }): string {
-  const date = new Date(s.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+function formatStateLabel(s: {
+  created_at: string;
+  sat_score: number | null;
+  gpa: number | null;
+}): string {
+  const date = new Date(s.created_at).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
   const parts = [date];
   if (s.sat_score) parts.push(`SAT ${s.sat_score}`);
   if (s.gpa) parts.push(`GPA ${Number(s.gpa).toFixed(1)}`);
   return parts.join(" · ");
 }
 
-export function RecommendationsPanel({ recommendations, studentId, basedOnState, statesWithRecs, onStateChange }: RecommendationsPanelProps) {
+export function RecommendationsPanel({
+  recommendations,
+  studentId,
+  basedOnState,
+  statesWithRecs,
+  onStateChange,
+}: RecommendationsPanelProps) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [isPending, startTransition] = useTransition();
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -41,7 +60,9 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
 
   async function handleRunMatching() {
     setMatchError(null);
-    const res = await fetch(`/api/students/${studentId}/recommend`, { method: "POST" });
+    const res = await fetch(`/api/students/${studentId}/recommend`, {
+      method: "POST",
+    });
     const body = await res.json();
     if (!res.ok) {
       setMatchError(body.error ?? "Matching failed");
@@ -55,12 +76,16 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
     return recommendations.filter((r) => r.match_category === filter);
   }, [recommendations, filter]);
 
-  const counts = useMemo(() => ({
-    all: recommendations.length,
-    reach: recommendations.filter((r) => r.match_category === "reach").length,
-    match: recommendations.filter((r) => r.match_category === "match").length,
-    safety: recommendations.filter((r) => r.match_category === "safety").length,
-  }), [recommendations]);
+  const counts = useMemo(
+    () => ({
+      all: recommendations.length,
+      reach: recommendations.filter((r) => r.match_category === "reach").length,
+      match: recommendations.filter((r) => r.match_category === "match").length,
+      safety: recommendations.filter((r) => r.match_category === "safety")
+        .length,
+    }),
+    [recommendations],
+  );
 
   const filterTabs = (
     <div className="flex items-center" style={{ gap: 2 }}>
@@ -76,8 +101,12 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
               fontSize: 14,
               fontFamily: "var(--font-sans)",
               fontWeight: isActive ? 600 : 400,
-              color: isActive ? "var(--color-text-primary)" : "var(--color-text-muted)",
-              background: isActive ? "var(--color-hover-bg-strong)" : "transparent",
+              color: isActive
+                ? "var(--color-text-primary)"
+                : "var(--color-text-muted)",
+              background: isActive
+                ? "var(--color-hover-bg-strong)"
+                : "transparent",
               borderRadius: "var(--radius-xs)",
               border: "none",
             }}
@@ -85,7 +114,12 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
             {f.label}
             <span
               className="ml-1"
-              style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", opacity: 0.7 }}
+              style={{
+                fontSize: 14,
+                fontFamily: "var(--font-mono)",
+                color: "var(--color-text-muted)",
+                opacity: 0.7,
+              }}
             >
               {count}
             </span>
@@ -101,7 +135,10 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
       dotColor="var(--color-stage-matched)"
       headerRight={filterTabs}
       footer={
-        <div className="flex items-center justify-between" style={{ width: "100%" }}>
+        <div
+          className="flex items-center justify-between"
+          style={{ width: "100%" }}
+        >
           <div className="flex items-center" style={{ gap: "var(--space-sm)" }}>
             {/* Inference selector */}
             {statesWithRecs && statesWithRecs.length > 1 && (
@@ -120,18 +157,34 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
                 }}
               >
                 {statesWithRecs.map((s) => (
-                  <option key={s.id} value={s.id}>{formatStateLabel(s)}</option>
+                  <option key={s.id} value={s.id}>
+                    {formatStateLabel(s)}
+                  </option>
                 ))}
               </select>
             )}
-            {basedOnState && (!statesWithRecs || statesWithRecs.length <= 1) && (
-              <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
-                Based on {formatStateLabel(basedOnState)}
-              </span>
-            )}
+            {basedOnState &&
+              (!statesWithRecs || statesWithRecs.length <= 1) && (
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  Based on {formatStateLabel(basedOnState)}
+                </span>
+              )}
           </div>
           <div className="flex items-center" style={{ gap: "var(--space-sm)" }}>
-            <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500, color: "var(--color-text-muted)" }}>
+            <span
+              style={{
+                fontSize: 14,
+                fontFamily: "var(--font-sans)",
+                fontWeight: 500,
+                color: "var(--color-text-muted)",
+              }}
+            >
               {recs.length} shown
             </span>
             {recommendations.length > 0 && basedOnState && (
@@ -150,7 +203,16 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
                 }}
               >
                 View Full Report
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M3.5 1.5l4 3.5-4 3.5" />
                 </svg>
               </Link>
@@ -164,7 +226,16 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
           title="No recommendations yet"
           description="Run AI matching to generate university recommendations."
           icon={
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="16" cy="16" r="12" />
               <path d="M34 34l-8-8" />
             </svg>
@@ -187,14 +258,24 @@ export function RecommendationsPanel({ recommendations, studentId, basedOnState,
                 {isPending ? "Running…" : "Run Matching"}
               </button>
               {matchError && (
-                <span style={{ fontSize: 12, color: "var(--color-error, #ef4444)" }}>{matchError}</span>
+                <span
+                  style={{ fontSize: 12, color: "var(--color-error, #ef4444)" }}
+                >
+                  {matchError}
+                </span>
               )}
             </div>
           }
         />
       ) : recs.length === 0 ? (
         <div className="flex items-center justify-center py-8">
-          <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)" }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontFamily: "var(--font-sans)",
+              color: "var(--color-text-muted)",
+            }}
+          >
             No {filter} recommendations
           </span>
         </div>

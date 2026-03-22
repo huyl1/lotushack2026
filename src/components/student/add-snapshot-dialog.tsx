@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { addSnapshot } from "@/app/(app)/students/[id]/actions";
 import type { StudentState } from "@/lib/supabase/types";
@@ -100,43 +100,23 @@ export function AddSnapshotDialog({ studentId, open, onClose, lastSnapshot, curr
   const [step, setStep] = useState<1 | 2>(1);
 
   // Step 1 — Scores
-  const [sat, setSat] = useState("");
-  const [act, setAct] = useState("");
-  const [gpa, setGpa] = useState("");
-  const [ielts, setIelts] = useState("");
+  const [sat, setSat] = useState(lastSnapshot?.sat_score != null ? String(lastSnapshot.sat_score) : "");
+  const [act, setAct] = useState(lastSnapshot?.act_score != null ? String(lastSnapshot.act_score) : "");
+  const [gpa, setGpa] = useState(lastSnapshot?.gpa != null ? String(Number(lastSnapshot.gpa).toFixed(2)) : "");
+  const [ielts, setIelts] = useState(lastSnapshot?.ielts_score != null ? String(Number(lastSnapshot.ielts_score).toFixed(1)) : "");
 
   // Step 2 — Application & Preferences
-  const [grade, setGrade] = useState("");
-  const [budget, setBudget] = useState("");
-  const [financialAid, setFinancialAid] = useState("");
-  const [minAcceptance, setMinAcceptance] = useState("");
-  const [majors, setMajors] = useState<string[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
-  const [setting, setSetting] = useState("");
-  const [size, setSize] = useState("");
+  const [grade, setGrade] = useState(currentGrade ?? "");
+  const [budget, setBudget] = useState(lastSnapshot?.budget_usd != null ? String(lastSnapshot.budget_usd) : "");
+  const [financialAid, setFinancialAid] = useState(lastSnapshot?.needs_financial_aid != null ? (lastSnapshot.needs_financial_aid ? "yes" : "no") : "");
+  const [minAcceptance, setMinAcceptance] = useState(lastSnapshot?.target_acceptance_rate_min != null ? String(lastSnapshot.target_acceptance_rate_min) : "");
+  const [majors, setMajors] = useState<string[]>(lastSnapshot?.target_majors ?? []);
+  const [countries, setCountries] = useState<string[]>(lastSnapshot?.preferred_countries ?? []);
+  const [setting, setSetting] = useState(lastSnapshot?.preferred_setting ?? "");
+  const [size, setSize] = useState(lastSnapshot?.preferred_size ?? "");
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      setMode(null);
-      setStep(1);
-      setError(null);
-      setSat(lastSnapshot?.sat_score != null ? String(lastSnapshot.sat_score) : "");
-      setAct(lastSnapshot?.act_score != null ? String(lastSnapshot.act_score) : "");
-      setGpa(lastSnapshot?.gpa != null ? String(Number(lastSnapshot.gpa).toFixed(2)) : "");
-      setIelts(lastSnapshot?.ielts_score != null ? String(Number(lastSnapshot.ielts_score).toFixed(1)) : "");
-      setGrade(currentGrade ?? "");
-      setBudget(lastSnapshot?.budget_usd != null ? String(lastSnapshot.budget_usd) : "");
-      setFinancialAid(lastSnapshot?.needs_financial_aid != null ? (lastSnapshot.needs_financial_aid ? "yes" : "no") : "");
-      setMinAcceptance(lastSnapshot?.target_acceptance_rate_min != null ? String(lastSnapshot.target_acceptance_rate_min) : "");
-      setMajors(lastSnapshot?.target_majors ?? []);
-      setCountries(lastSnapshot?.preferred_countries ?? []);
-      setSetting(lastSnapshot?.preferred_setting ?? "");
-      setSize(lastSnapshot?.preferred_size ?? "");
-    }
-  }, [open, lastSnapshot, currentGrade]);
 
   const handleSave = () => {
     setError(null);
