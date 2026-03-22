@@ -291,10 +291,10 @@ export function NewStudentDialog({ open, onClose }: NewStudentDialogProps) {
               <div>
                 <SectionLabel>Test Scores</SectionLabel>
                 <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-sm)" }}>
-                  <Field label="SAT"><Input value={sat} onChange={setSat} placeholder="400–1600" type="number" /></Field>
-                  <Field label="ACT"><Input value={act} onChange={setAct} placeholder="1–36" type="number" /></Field>
-                  <Field label="GPA"><Input value={gpa} onChange={setGpa} placeholder="0.0–4.0" type="number" /></Field>
-                  <Field label="IELTS"><Input value={ielts} onChange={setIelts} placeholder="0.0–9.0" type="number" /></Field>
+                  <Field label="SAT"><Input value={sat} onChange={setSat} placeholder="400–1600 (e.g. 1450)" type="number" /></Field>
+                  <Field label="ACT"><Input value={act} onChange={setAct} placeholder="1–36 (e.g. 33)" type="number" /></Field>
+                  <Field label="GPA"><Input value={gpa} onChange={setGpa} placeholder="0.0–4.0 (e.g. 3.8)" type="number" /></Field>
+                  <Field label="IELTS"><Input value={ielts} onChange={setIelts} placeholder="0.0–9.0 (e.g. 8.0)" type="number" /></Field>
                 </div>
               </div>
             ) : (

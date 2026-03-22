@@ -287,10 +287,10 @@ export function AddSnapshotDialog({ studentId, open, onClose, lastSnapshot, curr
               <div>
                 <SectionLabel>Test Scores</SectionLabel>
                 <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-sm)" }}>
-                  <Field label="SAT"><NumericInput value={sat} onChange={setSat} placeholder="400–1600" /></Field>
-                  <Field label="ACT"><NumericInput value={act} onChange={setAct} placeholder="1–36" /></Field>
-                  <Field label="GPA"><NumericInput value={gpa} onChange={setGpa} placeholder="0.0–4.0" /></Field>
-                  <Field label="IELTS"><NumericInput value={ielts} onChange={setIelts} placeholder="0.0–9.0" /></Field>
+                  <Field label="SAT"><NumericInput value={sat} onChange={setSat} placeholder="400–1600 (e.g. 1450)" /></Field>
+                  <Field label="ACT"><NumericInput value={act} onChange={setAct} placeholder="1–36 (e.g. 33)" /></Field>
+                  <Field label="GPA"><NumericInput value={gpa} onChange={setGpa} placeholder="0.0–4.0 (e.g. 3.8)" /></Field>
+                  <Field label="IELTS"><NumericInput value={ielts} onChange={setIelts} placeholder="0.0–9.0 (e.g. 8.0)" /></Field>
                 </div>
               </div>
             ) : (
