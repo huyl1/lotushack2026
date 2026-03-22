@@ -131,6 +131,12 @@ export interface Recommendation {
   lifestyle_culture: number | null;         // 15%
   admission_chance: number | null;          // 10%
   composite_score: number | null;           // Generated: AA×35% + FS×25% + SS×15% + LC×15% + AC×10%
+  // Per-category descriptions
+  academic_alignment_description: string | null;
+  financial_sustainability_description: string | null;
+  student_success_description: string | null;
+  lifestyle_culture_description: string | null;
+  admission_chance_description: string | null;
   created_at: string;
   // Joined fields (from query)
   university?: University;

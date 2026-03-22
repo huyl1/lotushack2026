@@ -123,9 +123,8 @@ export function FallingTools({ tools }: { tools: Tool[] }) {
       style={{
         width: "100%",
         height: 280,
-        borderRadius: 12,
-        border: "1px solid var(--color-border-subtle)",
-        background: "var(--color-bg-card)",
+        borderRadius: 0,
+        background: "transparent",
       }}
     >
       {/* Initial positioned cards (before physics kicks in) */}

@@ -64,17 +64,22 @@ export function PipelineCarousel({ steps }: { steps: PipelineStep[] }) {
   return (
     <div
       ref={containerRef}
-      style={{ height: `calc(100vh + ${extraScroll}px)`, position: "relative", borderTop: "1px solid var(--color-border-subtle)" }}
+      style={{ height: `calc(100vh + ${extraScroll}px)`, position: "relative", background: "var(--color-bg-card)" }}
     >
       <div
-        className="sticky top-0 flex flex-col overflow-hidden"
-        style={{ height: "100vh", paddingTop: 100 }}
+        className="sticky flex flex-col overflow-hidden"
+        style={{ top: 64, height: "calc(100vh - 64px)" }}
       >
-        <div style={{ width: "100%", paddingLeft: "max(24px, calc((100vw - 960px) / 2))", paddingRight: 24 }}>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-geist-mono)", color: "var(--color-text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, display: "block" }}>
-            SYSTEM PIPELINE
-          </span>
-          <h2 style={{ fontSize: 36, fontFamily: "var(--font-poppins)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, margin: "16px 0 24px 0", color: "var(--color-text-primary)" }}>
+        {/* Section bar — inside sticky */}
+        <div style={{ borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)", flexShrink: 0 }}>
+          <div className="flex items-center justify-between" style={{ maxWidth: 960, margin: "0 auto", padding: "14px 24px" }}>
+            <span style={{ fontSize: 12, fontFamily: "var(--font-geist-mono)", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, color: "var(--color-text-muted)" }}>[03] HOW IT WORKS</span>
+            <span style={{ fontSize: 11, fontFamily: "var(--font-geist-mono)", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, color: "var(--color-text-muted)" }}>/ 6 STEPS</span>
+          </div>
+        </div>
+
+        <div style={{ maxWidth: 960, margin: "0 auto", width: "100%", padding: "32px 24px 0" }}>
+          <h2 style={{ fontSize: 36, fontFamily: "var(--font-poppins)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 24px 0", color: "var(--color-text-primary)" }}>
             From raw data to<br />
             <span style={{ color: "var(--color-text-muted)" }}>personalized recommendations.</span>
           </h2>

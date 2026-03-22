@@ -12,12 +12,12 @@ interface ReportViewProps {
   recommendations: Recommendation[];
 }
 
-const SCORE_LABELS: { key: keyof Pick<Recommendation, "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance">; label: string }[] = [
-  { key: "academic_alignment", label: "Academic Alignment" },
-  { key: "financial_sustainability", label: "Financial Sustainability" },
-  { key: "student_success", label: "Student Success" },
-  { key: "lifestyle_culture", label: "Lifestyle & Culture" },
-  { key: "admission_chance", label: "Admission Chance" },
+const SCORE_LABELS: { key: keyof Pick<Recommendation, "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance">; descKey: keyof Pick<Recommendation, "academic_alignment_description" | "financial_sustainability_description" | "student_success_description" | "lifestyle_culture_description" | "admission_chance_description">; label: string }[] = [
+  { key: "academic_alignment", descKey: "academic_alignment_description", label: "Academic Alignment" },
+  { key: "financial_sustainability", descKey: "financial_sustainability_description", label: "Financial Sustainability" },
+  { key: "student_success", descKey: "student_success_description", label: "Student Success" },
+  { key: "lifestyle_culture", descKey: "lifestyle_culture_description", label: "Lifestyle & Culture" },
+  { key: "admission_chance", descKey: "admission_chance_description", label: "Admission Chance" },
 ];
 
 const TIER_ORDER: Tier[] = ["reach", "match", "safety"];
@@ -36,20 +36,27 @@ function scoreColor(score: number): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function ScoreBar({ label, score }: { label: string; score: number }) {
+function ScoreBar({ label, score, description }: { label: string; score: number; description?: string | null }) {
   const color = scoreColor(score);
 
   return (
-    <div className="flex items-center" style={{ gap: 10 }}>
-      <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 180, flexShrink: 0 }}>
-        {label}
-      </span>
-      <div className="flex-1" style={{ height: 10, borderRadius: 5, background: "var(--color-border)", overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${score}%`, borderRadius: 5, background: color, transition: "width 0.3s ease" }} />
+    <div className="flex flex-col" style={{ gap: 4 }}>
+      <div className="flex items-center" style={{ gap: 10 }}>
+        <span style={{ fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", width: 180, flexShrink: 0 }}>
+          {label}
+        </span>
+        <div className="flex-1" style={{ height: 10, borderRadius: 5, background: "var(--color-border)", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${score}%`, borderRadius: 5, background: color, transition: "width 0.3s ease" }} />
+        </div>
+        <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", fontWeight: 600, color, width: 32, textAlign: "right", flexShrink: 0 }}>
+          {score}
+        </span>
       </div>
-      <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", fontWeight: 600, color, width: 32, textAlign: "right", flexShrink: 0 }}>
-        {score}
-      </span>
+      {description && (
+        <p style={{ fontSize: 13, fontFamily: "var(--font-sans)", color: "var(--color-text-muted)", margin: 0, paddingLeft: 190, lineHeight: 1.5 }}>
+          {description}
+        </p>
+      )}
     </div>
   );
 }
@@ -339,8 +346,8 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
               Score Breakdown
             </h3>
             <div className="flex flex-col" style={{ gap: 10 }}>
-              {SCORE_LABELS.map(({ key, label }) => (
-                <ScoreBar key={key} label={label} score={Number(selected[key] ?? 0)} />
+              {SCORE_LABELS.map(({ key, descKey, label }) => (
+                <ScoreBar key={key} label={label} score={Number(selected[key] ?? 0)} description={selected[descKey]} />
               ))}
             </div>
           </div>

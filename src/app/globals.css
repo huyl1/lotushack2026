@@ -117,6 +117,38 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Full-page grid lines (Attio-style) — content column edges */
+.landing-grid-bg {
+  position: relative;
+  background: var(--color-bg-base);
+}
+
+.landing-grid-bg::before {
+  content: "";
+  position: absolute;
+  top: 100vh;
+  bottom: 0;
+  left: calc((100vw - 960px) / 2);
+  width: 960px;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Gap between sections */
+.section-gap {
+  height: 48px;
+  background: var(--color-bg-elevated);
+}
+
+@media (max-width: 1008px) {
+  .landing-grid-bg::before {
+    left: 24px;
+    width: calc(100vw - 48px);
+  }
+}
+
 /* ============================================================
    SCROLLBAR
    ============================================================ */
@@ -202,6 +234,16 @@ body {
   }
 }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap))); }
+}
+
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-100% - var(--gap))); }
+}
+
 /* ============================================================
    UTILITY CLASSES
    ============================================================ */
@@ -220,6 +262,14 @@ body {
 
 .animate-slide-left {
   animation: slide-in-left 250ms var(--ease-out) both;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
 }
 
 .skeleton {
