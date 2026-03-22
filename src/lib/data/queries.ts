@@ -87,14 +87,6 @@ export async function getDashboardStats() {
   const inProgress = (counts["profile_building"] ?? 0) + (counts["matched"] ?? 0);
   const readyToPresent = counts["matched"] ?? 0;
 
-  // Needs attention: query students whose latest state is older than 14 days
-  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-  const { count: staleCount } = await supabase
-    .from("students")
-    .select("id", { count: "exact", head: true })
-    .not("stage", "in", '("decided","archived")')
-    .or(`created_at.lt.${fourteenDaysAgo}`);
-
   // More accurate stale count needs to check latest state timestamp,
   // which requires a subquery. For now use the stage-based count as approximation
   // and refine with actual state check:

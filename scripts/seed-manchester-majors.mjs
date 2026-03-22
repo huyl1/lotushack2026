@@ -16,6 +16,7 @@ const HEADERS = {
 const UNIVERSITY_ID = "fff2e523-0ae3-4943-b749-9cf997c257b9";
 
 // GBP to USD: 1 GBP ≈ 1.27 USD
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const gbpToUsd = (gbp) => Math.round(gbp * 1.27);
 
 /**

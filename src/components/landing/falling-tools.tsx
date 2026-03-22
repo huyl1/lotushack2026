@@ -104,12 +104,13 @@ export function FallingTools({ tools }: { tools: Tool[] }) {
     };
     update();
 
+    const canvasContainer = canvasContainerRef.current;
     return () => {
       cancelAnimationFrame(animId);
       Render.stop(render);
       Runner.stop(runner);
-      if (render.canvas && canvasContainerRef.current) {
-        canvasContainerRef.current.removeChild(render.canvas);
+      if (render.canvas && canvasContainer) {
+        canvasContainer.removeChild(render.canvas);
       }
       World.clear(engine.world, false);
       Engine.clear(engine);

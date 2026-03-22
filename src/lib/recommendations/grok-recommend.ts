@@ -291,8 +291,8 @@ Return JSON in this exact schema — pick 5 per tier, university_id must be a UU
       "admission_chance_description": "..."
     }
   ],
-  "match":  [],
-  "safety": []
+  "match":  [ ...5 items ],
+  "safety": [ ...5 items ]
 }`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -358,7 +358,7 @@ export async function runGrokRecommendation(
       .from("students")
       .select("id,name")
       .ilike("name", `%${studentName}%`)
-      .limit(1);
+      .limit(5);
     if (error || !data?.length)
       throw new Error(
         `Student not found by name: ${error?.message ?? "unknown"}`,
@@ -368,9 +368,7 @@ export async function runGrokRecommendation(
 
   const { data: states, error: stateErr } = await sb
     .from("student_states")
-    .select(
-      "id,gpa,ielts_score,sat_score,act_score,target_majors,preferred_countries,preferred_setting,preferred_size,budget_usd,needs_financial_aid,student_embedding",
-    )
+    .select("*, student_embedding")
     .eq("student_id", studentRow.id)
     .order("created_at", { ascending: false })
     .limit(1);
@@ -382,9 +380,9 @@ export async function runGrokRecommendation(
     throw new Error("No student_embedding on latest state");
 
   const rawCandidates = await fetchCandidates(student);
-  if (rawCandidates.length < 5) {
+  if (rawCandidates.length < 15) {
     throw new Error(
-      `Only ${rawCandidates.length} candidates after hard filter; need at least 5`,
+      `Only ${rawCandidates.length} candidates after hard filter; need at least 15`,
     );
   }
 
@@ -466,14 +464,11 @@ export async function runGrokRecommendation(
       student_success: scores.student_success,
       lifestyle_culture: scores.lifestyle_culture,
       admission_chance: scores.admission_chance,
-      academic_alignment_description:
-        scores.academic_alignment_description ?? null,
-      financial_sustainability_description:
-        scores.financial_sustainability_description ?? null,
-      student_success_description: scores.student_success_description ?? null,
-      lifestyle_culture_description:
-        scores.lifestyle_culture_description ?? null,
-      admission_chance_description: scores.admission_chance_description ?? null,
+      academic_alignment_description: scores.academic_alignment_description,
+      financial_sustainability_description: scores.financial_sustainability_description,
+      student_success_description: scores.student_success_description,
+      lifestyle_culture_description: scores.lifestyle_culture_description,
+      admission_chance_description: scores.admission_chance_description,
     }));
 
     const { error: insErr } = await sb.from("recommendations").insert(rows);

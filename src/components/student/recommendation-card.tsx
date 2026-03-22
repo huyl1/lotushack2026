@@ -6,9 +6,9 @@ interface RecommendationCardProps {
   recommendation: Recommendation;
 }
 
-const SCORE_KEYS = ["academic_alignment", "financial_sustainability", "student_success", "lifestyle_culture", "admission_chance"] as const;
+type ScoreKey = "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance";
 
-const SCORE_LABELS: { key: (typeof SCORE_KEYS)[number]; label: string }[] = [
+const SCORE_LABELS: { key: ScoreKey; label: string }[] = [
   { key: "academic_alignment", label: "Academic" },
   { key: "financial_sustainability", label: "Financial" },
   { key: "student_success", label: "Success" },

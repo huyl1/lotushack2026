@@ -97,7 +97,11 @@ function GuestMeetingSession({ meetingId }: { meetingId: string }) {
       transcription.disconnect();
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, [transcription]);
+    // transcription.disconnect is a stable useCallback ref — using the whole
+    // transcription object here would re-run cleanup on every render and kill
+    // the media tracks.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcription.disconnect]);
 
   useEffect(() => {
     if (localVideoRef.current && localStream) {

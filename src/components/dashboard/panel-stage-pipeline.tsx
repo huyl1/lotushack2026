@@ -95,7 +95,7 @@ export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelinePro
       footer={legend}
     >
       <div className="relative" style={{ flex: 1, minHeight: 0 }}>
-        <ResponsiveContainer>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <PieChart>
             <Pie
               data={data}

@@ -138,7 +138,7 @@ export default function MeetingSentimentDashboardPage() {
           <h2 className="text-sm font-medium">Confidence over time</h2>
           <div className="mt-4 h-56">
             {lineData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <LineChart data={lineData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis dataKey="i" />
@@ -162,7 +162,7 @@ export default function MeetingSentimentDashboardPage() {
           <h2 className="text-sm font-medium">Distribution</h2>
           <div className="mt-4 h-56">
             {sentiments.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={distRows}>
                   <XAxis dataKey="name" />
                   <YAxis allowDecimals={false} />

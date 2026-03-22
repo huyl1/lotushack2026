@@ -36,18 +36,6 @@ const STAGE_TABS = [
 
 type FilterKey = (typeof STAGE_TABS)[number]["key"];
 
-function formatCountries(countries: string[] | null): string {
-  if (!countries || countries.length === 0) return "—";
-  if (countries.length <= 2) return countries.join(", ");
-  return `${countries[0]}, ${countries[1]} +${countries.length - 2}`;
-}
-
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
 
 export function DashboardContent({ students, stats }: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");

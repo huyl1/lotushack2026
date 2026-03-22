@@ -83,7 +83,6 @@ export function useValseaTranscription(
     micMutedRef.current = micMuted;
     if (micMuted) {
       pcmQueueRef.current = [];
-      setPartialText("");
       lastPartialRawRef.current = null;
     }
   }, [micMuted]);
@@ -415,7 +414,7 @@ export function useValseaTranscription(
   return {
     status,
     error,
-    partialText,
+    partialText: micMuted ? "" : partialText,
     start,
     stop,
     disconnect,

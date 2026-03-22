@@ -168,6 +168,7 @@ function imputeIelts(rank) {
   return baseIelts(rank);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function imputeToefl(rank) {
   return ieltsToToefl(baseIelts(rank));
 }

@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Panel } from "@/components/ui/panel";
-import { StageBadge } from "@/components/ui/badges";
 import { EmptyState } from "@/components/ui/empty-state";
 import { relativeTime } from "@/lib/utils/time";
 import type { StudentWithLatestState, StudentStage } from "@/lib/supabase/types";

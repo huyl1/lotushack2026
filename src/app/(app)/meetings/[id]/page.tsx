@@ -51,6 +51,7 @@ export default function HostMeetingPage() {
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   const guestBatchRef = useRef<string[]>([]);
   const guestTsRef = useRef<number[]>([]);
@@ -85,6 +86,18 @@ export default function HostMeetingPage() {
     displayName: hostLabel,
     enabled: Boolean(localStream),
   });
+
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+
+  useEffect(() => {
+    return () => {
+      transcription.disconnect();
+      localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcription.disconnect]);
 
   useEffect(() => {
     if (localVideoRef.current && localStream) {
@@ -371,7 +384,7 @@ export default function HostMeetingPage() {
       )}
       {chartData.length > 0 ? (
         <div className="mt-4 h-32 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={chartData}>
               <XAxis dataKey="i" hide />
               <YAxis domain={[0, 1]} width={32} />
