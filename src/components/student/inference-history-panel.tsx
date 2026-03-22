@@ -1,8 +1,11 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
+import { deleteReport } from "@/app/(app)/students/[id]/actions";
 import type { InferenceRun } from "@/lib/supabase/types";
 
 interface InferenceHistoryPanelProps {
@@ -24,6 +27,18 @@ function formatScores(run: InferenceRun): string {
 }
 
 export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHistoryPanelProps) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function handleDeleteReport(stateId: string) {
+    startTransition(async () => {
+      await deleteReport(studentId, stateId);
+      setConfirmId(null);
+      router.refresh();
+    });
+  }
+
   return (
     <Panel
       title="Matching Reports"
@@ -109,11 +124,57 @@ export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHis
                 </span>
               </div>
 
-              {/* Rec count + arrow */}
+              {/* Rec count + delete + arrow */}
               <div className="flex items-center shrink-0" style={{ gap: 8 }}>
                 <span style={{ fontSize: 15, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
                   {run.rec_count} recs
                 </span>
+                {confirmId === run.state_id ? (
+                  <div className="flex items-center" style={{ gap: 4 }} onClick={(e) => e.preventDefault()}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); handleDeleteReport(run.state_id); }}
+                      disabled={isPending}
+                      className="inline-flex items-center px-2 py-1 transition-colors"
+                      style={{
+                        fontSize: 12, fontWeight: 600, fontFamily: "var(--font-sans)",
+                        background: "rgba(239,68,68,0.15)", color: "#ef4444",
+                        border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-xs)",
+                        cursor: isPending ? "wait" : "pointer", opacity: isPending ? 0.6 : 1,
+                      }}
+                    >
+                      {isPending ? "..." : "Confirm"}
+                    </button>
+                    <button
+                      onClick={(e) => { e.preventDefault(); setConfirmId(null); }}
+                      className="inline-flex items-center px-2 py-1 transition-colors"
+                      style={{
+                        fontSize: 12, fontWeight: 600, fontFamily: "var(--font-sans)",
+                        background: "var(--color-hover-bg)", color: "var(--color-text-muted)",
+                        border: "1px solid var(--color-border)", borderRadius: "var(--radius-xs)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={(e) => { e.preventDefault(); setConfirmId(run.state_id); }}
+                    className="inline-flex items-center justify-center transition-colors"
+                    style={{
+                      width: 28, height: 28, borderRadius: "var(--radius-xs)",
+                      background: "transparent", border: "none", cursor: "pointer",
+                      color: "var(--color-text-muted)",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.color = "#ef4444"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-muted)"; }}
+                    title="Delete report"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M2 3.5h10M5.5 3.5V2h3v1.5M3.5 3.5v8.5h7v-8.5M5.75 6v4M8.25 6v4" />
+                    </svg>
+                  </button>
+                )}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 2l5 5-5 5" />
                 </svg>

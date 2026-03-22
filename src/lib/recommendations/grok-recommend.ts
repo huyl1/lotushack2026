@@ -382,9 +382,9 @@ export async function runGrokRecommendation(
     throw new Error("No student_embedding on latest state");
 
   const rawCandidates = await fetchCandidates(student);
-  if (rawCandidates.length < 15) {
+  if (rawCandidates.length < 5) {
     throw new Error(
-      `Only ${rawCandidates.length} candidates after hard filter; relax constraints`,
+      `Only ${rawCandidates.length} candidates after hard filter; need at least 5`,
     );
   }
 

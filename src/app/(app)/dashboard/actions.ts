@@ -70,7 +70,6 @@ export async function createStudent(data: {
       .from("student_states")
       .update({
         student_embedding: embeddingToPgVector(embedding),
-        left_overtime: (rowForEmbed.left_overtime as number | undefined) ?? null,
       })
       .eq("id", stateRow.id);
 

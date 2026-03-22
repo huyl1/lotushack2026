@@ -63,15 +63,40 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
-function TagInput({ values, onChange }: { values: string[]; onChange: (v: string[]) => void }) {
+function TagInput({ values, onChange, suggestions }: { values: string[]; onChange: (v: string[]) => void; suggestions?: string[] }) {
   const [input, setInput] = useState("");
-  const add = () => {
-    const v = input.trim();
-    if (v && !values.includes(v)) onChange([...values, v]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const add = (v?: string) => {
+    const val = (v ?? input).trim();
+    if (val && !values.includes(val)) onChange([...values, val]);
     setInput("");
+    setShowDropdown(false);
   };
+  const filtered = (suggestions ?? []).filter(
+    (s) => !values.includes(s) && (!input || s.toLowerCase().includes(input.toLowerCase())),
+  );
+  const quickPicks = (suggestions ?? []).filter((s) => !values.includes(s));
   return (
     <div>
+      {/* Quick-pick chips */}
+      {quickPicks.length > 0 && (
+        <div className="flex flex-wrap" style={{ gap: 4, marginBottom: 6 }}>
+          {quickPicks.map((s) => (
+            <button key={s} type="button" onClick={() => add(s)}
+              className="inline-flex items-center transition-colors"
+              style={{
+                fontSize: 11, fontFamily: "var(--font-sans)", fontWeight: 500,
+                padding: "2px 8px", borderRadius: "var(--radius-xs)",
+                background: "var(--color-hover-bg)", color: "var(--color-text-muted)",
+                border: "1px dashed var(--color-border)", cursor: "pointer",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; e.currentTarget.style.color = "var(--color-text-primary)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.color = "var(--color-text-muted)"; }}
+            >+ {s}</button>
+          ))}
+        </div>
+      )}
+      {/* Selected tags */}
       <div className="flex flex-wrap" style={{ gap: 4, marginBottom: values.length ? 6 : 0 }}>
         {values.map((v) => (
           <span key={v} className="inline-flex items-center gap-1"
@@ -84,13 +109,33 @@ function TagInput({ values, onChange }: { values: string[]; onChange: (v: string
           </span>
         ))}
       </div>
-      <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
-        placeholder="Type and press Enter"
-        style={inputStyle}
-        onFocus={(e) => (e.target.style.borderColor = "var(--color-accent)")}
-        onBlur={(e) => { e.target.style.borderColor = "var(--color-border)"; add(); }}
-      />
+      {/* Input with autocomplete dropdown */}
+      <div style={{ position: "relative" }}>
+        <input type="text" value={input} onChange={(e) => { setInput(e.target.value); setShowDropdown(true); }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
+          placeholder="Type and press Enter"
+          style={inputStyle}
+          onFocus={(e) => { e.target.style.borderColor = "var(--color-accent)"; setShowDropdown(true); }}
+          onBlur={(e) => { e.target.style.borderColor = "var(--color-border)"; setTimeout(() => setShowDropdown(false), 150); add(); }}
+        />
+        {showDropdown && input && filtered.length > 0 && (
+          <div style={{
+            position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
+            background: "var(--color-bg-card)", border: "1px solid var(--color-border)",
+            borderRadius: "var(--radius-xs)", marginTop: 2, maxHeight: 120, overflowY: "auto",
+          }}>
+            {filtered.map((s) => (
+              <button key={s} type="button"
+                onMouseDown={(e) => { e.preventDefault(); add(s); }}
+                className="block w-full text-left transition-colors"
+                style={{ fontSize: 13, fontFamily: "var(--font-sans)", padding: "6px 10px", background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-hover-bg)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+              >{s}</button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -268,8 +313,8 @@ export function AddSnapshotDialog({ studentId, open, onClose, lastSnapshot, curr
                 <div>
                   <SectionLabel>Preferences</SectionLabel>
                   <div className="flex flex-col" style={{ gap: "var(--space-sm)" }}>
-                    <Field label="Target Majors"><TagInput values={majors} onChange={setMajors} /></Field>
-                    <Field label="Preferred Countries"><TagInput values={countries} onChange={setCountries} /></Field>
+                    <Field label="Target Majors"><TagInput values={majors} onChange={setMajors} suggestions={["Computer Science", "Economics", "Mechanical Engineering", "Psychology"]} /></Field>
+                    <Field label="Preferred Countries"><TagInput values={countries} onChange={setCountries} suggestions={["United States of America", "United Kingdom", "Australia", "Canada"]} /></Field>
                     <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-sm)" }}>
                       <Field label="Setting">
                         <select value={setting} onChange={(e) => setSetting(e.target.value)} style={selectStyle}>
