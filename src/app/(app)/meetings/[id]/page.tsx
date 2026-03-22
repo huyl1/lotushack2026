@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { createStudent } from "@/app/(app)/dashboard/actions";
+import type { CreateStudentInput } from "@/lib/meeting/transcript-student-extraction";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Line,
@@ -38,6 +40,14 @@ export default function HostMeetingPage() {
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [micMuted, setMicMuted] = useState(false);
+  const [endedTab, setEndedTab] = useState<"overview" | "transcript">(
+    "overview",
+  );
+  const [extractedStudent, setExtractedStudent] =
+    useState<CreateStudentInput | null>(null);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -64,6 +74,7 @@ export default function HostMeetingPage() {
     language: meeting?.language ?? "english",
     onFinal: onFinalHost,
     onPartial: () => {},
+    micMuted,
   });
 
   const webrtc = useWebRTC({
@@ -126,6 +137,12 @@ export default function HostMeetingPage() {
       cancelled = true;
     };
   }, [meetingId, supabase]);
+
+  useEffect(() => {
+    setExtractedStudent(null);
+    setExtractError(null);
+    setEndedTab("overview");
+  }, [meetingId]);
 
   useEffect(() => {
     const ch = supabase
@@ -249,6 +266,43 @@ export default function HostMeetingPage() {
     router.refresh();
   }
 
+  const runExtractFromTranscript = useCallback(async () => {
+    setExtractError(null);
+    setExtracting(true);
+    try {
+      const res = await fetch(
+        `/api/meeting/${meetingId}/transcript-to-student`,
+        { method: "POST" },
+      );
+      const j = (await res.json()) as {
+        error?: string;
+        student?: CreateStudentInput;
+      };
+      if (!res.ok) throw new Error(j.error ?? "Extraction failed");
+      if (!j.student) throw new Error("No student payload returned");
+      setExtractedStudent(j.student);
+    } catch (e) {
+      setExtractedStudent(null);
+      setExtractError(e instanceof Error ? e.message : "Extraction failed");
+    } finally {
+      setExtracting(false);
+    }
+  }, [meetingId]);
+
+  const runCreateStudentFromExtract = useCallback(async () => {
+    if (!extractedStudent) return;
+    setExtractError(null);
+    setCreating(true);
+    try {
+      const id = await createStudent(extractedStudent);
+      router.push(`/students/${id}`);
+    } catch (e) {
+      setExtractError(e instanceof Error ? e.message : "Could not create student");
+    } finally {
+      setCreating(false);
+    }
+  }, [extractedStudent, router]);
+
   const latestSentiment = sentiments[sentiments.length - 1];
   const chartData = sentiments.map((s, i) => ({
     i,
@@ -282,6 +336,53 @@ export default function HostMeetingPage() {
     typeof window !== "undefined"
       ? `${window.location.origin}/meeting/${meetingId}`
       : "";
+
+  const isEnded = meeting.status === "ended";
+
+  const sentimentSection = (
+    <div
+      className="rounded-lg border p-4"
+      style={{ borderColor: "var(--color-border)" }}
+    >
+      <h3 className="text-sm font-medium">Guest sentiment (VALSEA)</h3>
+      {latestSentiment ? (
+        <>
+          <p className="mt-2 text-lg capitalize">
+            {latestSentiment.sentiment}{" "}
+            <span className="text-sm opacity-70">
+              ({latestSentiment.confidence.toFixed(2)})
+            </span>
+          </p>
+          {latestSentiment.emotions && latestSentiment.emotions.length > 0 ? (
+            <p
+              className="mt-1 text-sm"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {latestSentiment.emotions.join(", ")}
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
+          {isEnded
+            ? "No sentiment samples were recorded for this meeting."
+            : `Waiting for enough guest speech (batches of ${SENTIMENT_BATCH} segments)…`}
+        </p>
+      )}
+      {chartData.length > 0 ? (
+        <div className="mt-4 h-32 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <XAxis dataKey="i" hide />
+              <YAxis domain={[0, 1]} width={32} />
+              <Tooltip />
+              <Line type="monotone" dataKey="c" stroke="#10b981" dot />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : null}
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -351,112 +452,215 @@ export default function HostMeetingPage() {
         </div>
       </div>
 
-      {(sessionError || transcription.error || webrtc.error) && (
+      {(sessionError ||
+        transcription.error ||
+        webrtc.error ||
+        extractError) && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
-          {sessionError || transcription.error || webrtc.error}
+          {sessionError || transcription.error || webrtc.error || extractError}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-2">
-            <div
-              className="relative aspect-video overflow-hidden rounded-lg bg-black"
+      {isEnded ? (
+        <>
+          <div
+            className="mb-4 flex gap-1 border-b"
+            style={{ borderColor: "var(--color-border)" }}
+            role="tablist"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={endedTab === "overview"}
+              onClick={() => setEndedTab("overview")}
+              className="border-b-2 px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                borderColor:
+                  endedTab === "overview" ? "var(--color-accent)" : "transparent",
+                color:
+                  endedTab === "overview"
+                    ? "var(--color-text)"
+                    : "var(--color-text-muted)",
+              }}
             >
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                className="h-full w-full object-cover"
-              />
-              <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
-                Guest
-              </span>
-            </div>
-            <div
-              className="relative aspect-video overflow-hidden rounded-lg bg-black"
+              Overview
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={endedTab === "transcript"}
+              onClick={() => setEndedTab("transcript")}
+              className="border-b-2 px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                borderColor:
+                  endedTab === "transcript" ? "var(--color-accent)" : "transparent",
+                color:
+                  endedTab === "transcript"
+                    ? "var(--color-text)"
+                    : "var(--color-text-muted)",
+              }}
             >
-              <video
-                ref={localVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className="h-full w-full object-cover"
-              />
-              <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
-                You{micMuted ? " · Mic off" : ""}
-              </span>
-            </div>
+              Transcript
+            </button>
           </div>
 
-          <div
-            className="rounded-lg border p-4"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <h3 className="text-sm font-medium">Guest sentiment (VALSEA)</h3>
-            {latestSentiment ? (
-              <>
-                <p className="mt-2 text-lg capitalize">
-                  {latestSentiment.sentiment}{" "}
-                  <span className="text-sm opacity-70">
-                    ({latestSentiment.confidence.toFixed(2)})
-                  </span>
-                </p>
-                {latestSentiment.emotions &&
-                latestSentiment.emotions.length > 0 ? (
-                  <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    {latestSentiment.emotions.join(", ")}
+          {endedTab === "overview" ? (
+            <div className="grid gap-6">
+              <div
+                className="rounded-lg border p-4 text-sm"
+                style={{ borderColor: "var(--color-border)" }}
+              >
+                <p className="font-medium">Session ended</p>
+                {meeting.ended_at ? (
+                  <p
+                    className="mt-1"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {new Date(meeting.ended_at).toLocaleString()}
                   </p>
                 ) : null}
-              </>
-            ) : (
-              <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                Waiting for enough guest speech (batches of {SENTIMENT_BATCH}{" "}
-                segments)…
-              </p>
-            )}
-            {chartData.length > 0 ? (
-              <div className="mt-4 h-32 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <XAxis dataKey="i" hide />
-                    <YAxis domain={[0, 1]} width={32} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="c" stroke="#10b981" dot />
-                  </LineChart>
-                </ResponsiveContainer>
               </div>
-            ) : null}
-          </div>
-        </div>
+              {sentimentSection}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div
+                className="rounded-lg border p-4"
+                style={{ borderColor: "var(--color-border)" }}
+              >
+                <h3 className="text-sm font-medium">
+                  Create student from transcript
+                </h3>
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  Use the model to infer profile fields from the conversation, then
+                  save a new student record (same flow as the dashboard).
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={extracting || utterances.length === 0}
+                    onClick={() => void runExtractFromTranscript()}
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                    style={{ background: "var(--color-accent)" }}
+                  >
+                    {extracting ? "Extracting…" : "Extract profile with AI"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!extractedStudent || creating}
+                    onClick={() => void runCreateStudentFromExtract()}
+                    className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
+                    style={{ borderColor: "var(--color-border)" }}
+                  >
+                    {creating ? "Creating…" : "Create student"}
+                  </button>
+                </div>
+                {extractedStudent ? (
+                  <pre
+                    className="mt-4 max-h-64 overflow-auto rounded-md border p-3 text-xs leading-relaxed"
+                    style={{
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
+                    {JSON.stringify(extractedStudent, null, 2)}
+                  </pre>
+                ) : null}
+              </div>
 
-        <div
-          className="flex max-h-[70vh] flex-col rounded-lg border"
-          style={{ borderColor: "var(--color-border)" }}
-        >
+              <div
+                className="flex max-h-[70vh] flex-col rounded-lg border"
+                style={{ borderColor: "var(--color-border)" }}
+              >
+                <div
+                  className="border-b px-4 py-2 text-sm font-medium"
+                  style={{ borderColor: "var(--color-border)" }}
+                >
+                  Transcript
+                </div>
+                <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+                  {utterances.length === 0 ? (
+                    <p style={{ color: "var(--color-text-muted)" }}>
+                      No transcript lines were saved.
+                    </p>
+                  ) : (
+                    utterances.map((u) => (
+                      <div key={u.id}>
+                        <span style={{ color: "var(--color-text-muted)" }}>
+                          {u.role === "host" ? "You" : u.speaker ?? "Guest"}:
+                        </span>{" "}
+                        {u.text}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-black">
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
+                  Guest
+                </span>
+              </div>
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-black">
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
+                  You{micMuted ? " · Mic off" : ""}
+                </span>
+              </div>
+            </div>
+
+            {sentimentSection}
+          </div>
+
           <div
-            className="border-b px-4 py-2 text-sm font-medium"
+            className="flex max-h-[70vh] flex-col rounded-lg border"
             style={{ borderColor: "var(--color-border)" }}
           >
-            Live transcript
-          </div>
-          <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-            {utterances.map((u) => (
-              <div key={u.id}>
-                <span style={{ color: "var(--color-text-muted)" }}>
-                  {u.role === "host" ? "You" : u.speaker ?? "Guest"}:
-                </span>{" "}
-                {u.text}
-              </div>
-            ))}
-            {transcription.partialText ? (
-              <div style={{ color: "var(--color-text-muted)" }}>
-                You (partial): {transcription.partialText}
-              </div>
-            ) : null}
+            <div
+              className="border-b px-4 py-2 text-sm font-medium"
+              style={{ borderColor: "var(--color-border)" }}
+            >
+              Live transcript
+            </div>
+            <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+              {utterances.map((u) => (
+                <div key={u.id}>
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    {u.role === "host" ? "You" : u.speaker ?? "Guest"}:
+                  </span>{" "}
+                  {u.text}
+                </div>
+              ))}
+              {transcription.partialText ? (
+                <div style={{ color: "var(--color-text-muted)" }}>
+                  You (partial): {transcription.partialText}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

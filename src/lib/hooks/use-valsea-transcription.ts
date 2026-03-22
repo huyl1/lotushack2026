@@ -27,6 +27,13 @@ export interface UseValseaTranscriptionOptions {
   language: string;
   onFinal: (text: string, rawText: string | null, timestampMs: number) => void;
   onPartial: (text: string) => void;
+  /**
+   * When true, mic audio is not sent to VALSEA for this participant.
+   * Use the same flag as WebRTC mute: cloned tracks still capture the mic, but we
+   * drop samples here so speaker bleed / room audio is not saved under this role
+   * while the user is muted for others.
+   */
+  micMuted?: boolean;
 }
 
 export interface UseValseaTranscriptionReturn {
@@ -41,10 +48,11 @@ export interface UseValseaTranscriptionReturn {
 export function useValseaTranscription(
   options: UseValseaTranscriptionOptions,
 ): UseValseaTranscriptionReturn {
-  const { language, onFinal, onPartial } = options;
+  const { language, onFinal, onPartial, micMuted = false } = options;
 
   const onFinalRef = useRef(onFinal);
   const onPartialRef = useRef(onPartial);
+  const micMutedRef = useRef(micMuted);
   useEffect(() => {
     onFinalRef.current = onFinal;
     onPartialRef.current = onPartial;
@@ -70,6 +78,15 @@ export function useValseaTranscription(
   const ownsStreamRef = useRef(false);
   const pcmQueueRef = useRef<Int16Array[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    micMutedRef.current = micMuted;
+    if (micMuted) {
+      pcmQueueRef.current = [];
+      setPartialText("");
+      lastPartialRawRef.current = null;
+    }
+  }, [micMuted]);
 
   const flushAudio = useCallback(() => {
     const ws = wsRef.current;
@@ -339,12 +356,20 @@ export function useValseaTranscription(
         });
         ownsStreamRef.current = true;
       }
-      mediaStreamRef.current = stream;
-
-      const audioOnly =
-        stream.getAudioTracks().length > 0
-          ? new MediaStream(stream.getAudioTracks())
-          : stream;
+      // Clone audio tracks so external mute (track.enabled = false) does not
+      // silence the transcription pipeline — cloned tracks stay live independently.
+      const srcAudio = stream.getAudioTracks();
+      let audioOnly: MediaStream;
+      if (srcAudio.length > 0) {
+        audioOnly = new MediaStream(srcAudio.map((t) => t.clone()));
+        if (ownsStreamRef.current) {
+          for (const t of stream.getTracks()) t.stop();
+        }
+        ownsStreamRef.current = true;
+      } else {
+        audioOnly = stream;
+      }
+      mediaStreamRef.current = audioOnly;
 
       const audioContext = new AudioContext();
       audioCtxRef.current = audioContext;
@@ -353,6 +378,7 @@ export function useValseaTranscription(
       const processor = audioContext.createScriptProcessor(bufferSize, 2, 2);
       processorRef.current = processor;
       processor.onaudioprocess = (ev) => {
+        if (micMutedRef.current) return;
         const inBuf = ev.inputBuffer;
         const ch0 = inBuf.getChannelData(0);
         const ch1 = inBuf.numberOfChannels > 1 ? inBuf.getChannelData(1) : ch0;

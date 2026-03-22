@@ -58,6 +58,7 @@ function GuestMeetingSession({ meetingId }: { meetingId: string }) {
     language: meeting?.language ?? "english",
     onFinal: onFinalGuest,
     onPartial: () => {},
+    micMuted,
   });
 
   const webrtc = useWebRTC({

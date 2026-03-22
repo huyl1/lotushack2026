@@ -1,6 +1,8 @@
 /**
  * Mute/unmute the local microphone for a live getUserMedia stream.
- * Disabling audio tracks stops audio to WebRTC peers and to the transcription pipeline.
+ * Disabling audio tracks stops audio to WebRTC peers. Transcription uses cloned
+ * tracks + `micMuted` in `useValseaTranscription` so muting does not mis-attribute
+ * bleed-through audio to this participant.
  */
 export function setLocalMicMuted(
   stream: MediaStream | null,
