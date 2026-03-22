@@ -99,7 +99,10 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
                   />
                   <Tooltip
                     contentStyle={TOOLTIP_STYLE}
-                    formatter={(v: number) => [m.format(v), metric]}
+                    formatter={(v) => [
+                      m.format(typeof v === "number" ? v : Number(v)),
+                      metric,
+                    ]}
                   />
                   <Line
                     type="monotone"

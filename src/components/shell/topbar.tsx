@@ -2,22 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
 import { useBreadcrumb } from "@/lib/context/breadcrumb";
 
 function FormattedDate() {
-  const [date, setDate] = useState("");
-
-  useEffect(() => {
-    setDate(
-      new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    );
-  }, []);
+  const date = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return <>{date}</>;
 }
@@ -41,6 +34,12 @@ function getBreadcrumbs(
 
     if (seg === "dashboard") {
       crumbs.push({ label: "Dashboard", muted: false, href: "/dashboard" });
+    } else if (seg === "meetings") {
+      crumbs.push({
+        label: "Meetings",
+        muted: !isLast,
+        href: isLast ? null : "/meetings",
+      });
     } else if (seg === "students") {
       if (crumbs.length === 0) crumbs.push({ label: "Dashboard", muted: true, href: "/dashboard" });
     } else if (seg === "new") {
@@ -53,7 +52,11 @@ function getBreadcrumbs(
       crumbs.push({ label: "Report", muted: !isLast, href: isLast ? null : pathUpTo });
     } else {
       const label = dynamicLabels[seg] ?? seg.slice(0, 8) + "…";
-      crumbs.push({ label, muted: !isLast, href: isLast ? null : `/students/${seg}` });
+      crumbs.push({
+        label,
+        muted: !isLast,
+        href: isLast ? null : pathUpTo,
+      });
     }
   }
 

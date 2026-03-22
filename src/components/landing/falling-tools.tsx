@@ -146,7 +146,7 @@ export function FallingTools({ tools }: { tools: Tool[] }) {
                 borderRadius: 100,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              { }
               <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, overflow: "hidden" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={t.logo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />

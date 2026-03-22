@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 interface PageBannerProps {
   title: string;
@@ -10,11 +10,15 @@ interface PageBannerProps {
 }
 
 function LiveClock() {
-  const [time, setTime] = useState("");
-  const [mounted, setMounted] = useState(false);
+  const [time, setTime] = useState(() =>
+    new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  );
 
   useEffect(() => {
-    setMounted(true);
     const update = () => {
       const now = new Date();
       setTime(
@@ -30,7 +34,6 @@ function LiveClock() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!mounted) return null;
   return <>{time}</>;
 }
 
