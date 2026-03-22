@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { NewStudentDialog } from "@/components/dashboard/new-student-dialog";
 import { PageBanner } from "@/components/ui/page-banner";
 import { AddSnapshotDialog } from "./add-snapshot-dialog";
 import type { StudentDetail } from "@/lib/supabase/types";
@@ -11,7 +12,8 @@ interface StudentHeaderProps {
 }
 
 export function StudentBanner({ student }: StudentHeaderProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newStudentOpen, setNewStudentOpen] = useState(false);
+  const [snapshotOpen, setSnapshotOpen] = useState(false);
 
   return (
     <>
@@ -22,7 +24,29 @@ export function StudentBanner({ student }: StudentHeaderProps) {
           primaryMeta={
             <div className="flex items-center pointer-events-auto" style={{ gap: "var(--space-sm)" }}>
               <button
-                onClick={() => setDialogOpen(true)}
+                type="button"
+                onClick={() => setNewStudentOpen(true)}
+                className="inline-flex items-center gap-2 px-4 h-9 transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(8px)",
+                  color: "#ffffff",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: "var(--radius-xs)",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M6 1v10M1 6h10" />
+                </svg>
+                New Student
+              </button>
+              <button
+                type="button"
+                onClick={() => setSnapshotOpen(true)}
                 className="inline-flex items-center gap-2 px-4 h-9 transition-colors"
                 style={{
                   background: "rgba(255,255,255,0.1)",
@@ -69,11 +93,14 @@ export function StudentBanner({ student }: StudentHeaderProps) {
         />
       </div>
 
-      {dialogOpen && (
+      {newStudentOpen && (
+        <NewStudentDialog open={newStudentOpen} onClose={() => setNewStudentOpen(false)} />
+      )}
+      {snapshotOpen && (
         <AddSnapshotDialog
           studentId={student.id}
-          open={dialogOpen}
-          onClose={() => setDialogOpen(false)}
+          open={snapshotOpen}
+          onClose={() => setSnapshotOpen(false)}
           lastSnapshot={student.states[student.states.length - 1] ?? null}
           currentGrade={student.grade}
         />
