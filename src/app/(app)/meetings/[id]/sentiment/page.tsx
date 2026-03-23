@@ -49,8 +49,8 @@ export default function MeetingSentimentDashboardPage() {
         .eq("meeting_id", meetingId)
         .order("created_at", { ascending: true });
       if (cancelled) return;
-      if (u) setUtterances(u as MeetingUtterance[]);
-      if (s) setSentiments(s as MeetingSentiment[]);
+      if (u) setUtterances(u as unknown as MeetingUtterance[]);
+      if (s) setSentiments(s as unknown as MeetingSentiment[]);
     })();
     return () => {
       cancelled = true;

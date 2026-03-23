@@ -25,7 +25,7 @@ export default async function ReportPage({
 
   return (
     <ReportView
-      student={student as Student}
+      student={student as unknown as Student}
       state={result.state}
       recommendations={result.recommendations}
     />

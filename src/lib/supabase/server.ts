@@ -1,11 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import type { Database } from "@/lib/supabase/database.types";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -29,11 +30,11 @@ export async function createClient() {
 }
 
 /** Service-role client for server-side data access — bypasses RLS. Never use in client components. */
-let _admin: ReturnType<typeof createSupabaseClient> | null = null;
+let _admin: ReturnType<typeof createSupabaseClient<Database>> | null = null;
 
 export function createAdminClient() {
   if (!_admin) {
-    _admin = createSupabaseClient(
+    _admin = createSupabaseClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { realtime: { params: { eventsPerSecond: 10 } } },

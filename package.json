@@ -12,7 +12,8 @@
     "supabase:status": "supabase status",
     "supabase:db:reset": "supabase db reset",
     "supabase:migration:new": "supabase migration new",
-    "demo:valsea-proxy": "node scripts/valsea-ws-proxy.mjs"
+    "demo:valsea-proxy": "node scripts/valsea-ws-proxy.mjs",
+    "start:valsea-proxy": "node scripts/valsea-ws-proxy.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

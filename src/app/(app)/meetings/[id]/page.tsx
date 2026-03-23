@@ -129,21 +129,21 @@ export default function HostMeetingPage() {
         setLoadError(error?.message ?? "Meeting not found");
         return;
       }
-      setMeeting(data as Meeting);
+      setMeeting(data as unknown as Meeting);
 
       const { data: urows } = await supabase
         .from("meeting_utterances")
         .select("*")
         .eq("meeting_id", meetingId)
         .order("created_at", { ascending: true });
-      if (urows) setUtterances(urows as MeetingUtterance[]);
+      if (urows) setUtterances(urows as unknown as MeetingUtterance[]);
 
       const { data: srows } = await supabase
         .from("meeting_sentiments")
         .select("*")
         .eq("meeting_id", meetingId)
         .order("created_at", { ascending: true });
-      if (srows) setSentiments(srows as MeetingSentiment[]);
+      if (srows) setSentiments(srows as unknown as MeetingSentiment[]);
     })();
 
     return () => {
@@ -251,7 +251,7 @@ export default function HostMeetingPage() {
         .single();
 
       if (error) throw new Error(error.message);
-      if (updated) setMeeting(updated as Meeting);
+      if (updated) setMeeting(updated as unknown as Meeting);
 
       await transcription.start(stream);
     } catch (e) {

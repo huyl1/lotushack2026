@@ -1,0 +1,16 @@
+# Next.js web service (Railpack). Do not add [deploy] startCommand here — it would
+# override the Valsea Dockerfile CMD when that service builds from this repo.
+#
+# Valsea proxy: create a second Railway service, set Build → Dockerfile path to
+# `Dockerfile.valsea`. See RAILWAY.md.
+
+[build]
+watchPatterns = [
+  "src/**",
+  "public/**",
+  "package.json",
+  "package-lock.json",
+  "next.config.ts",
+  "postcss.config.mjs",
+  "tsconfig.json",
+]

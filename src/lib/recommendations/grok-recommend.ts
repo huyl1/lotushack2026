@@ -179,7 +179,7 @@ async function fetchCandidates(
   if (error) throw new Error(error.message);
 
   const best = new Map<string, CandidateRow>();
-  for (const row of (data ?? []) as CandidateRow[]) {
+  for (const row of (data ?? []) as unknown as CandidateRow[]) {
     const prev = best.get(row.university_id);
     if (
       !prev ||
@@ -352,7 +352,7 @@ export async function runGrokRecommendation(
       throw new Error(
         `Student not found by id: ${error?.message ?? "unknown"}`,
       );
-    studentRow = data;
+    studentRow = data as { id: string; name: string };
   } else {
     const { data, error } = await sb
       .from("students")
@@ -363,7 +363,7 @@ export async function runGrokRecommendation(
       throw new Error(
         `Student not found by name: ${error?.message ?? "unknown"}`,
       );
-    studentRow = data[0]!;
+    studentRow = data[0] as { id: string; name: string };
   }
 
   const { data: states, error: stateErr } = await sb
@@ -476,7 +476,7 @@ export async function runGrokRecommendation(
   }
 
   return {
-    student: studentRow,
+    student: studentRow!,
     studentStateId: student.id,
     candidatesCount: rawCandidates.length,
     filteredCount: pool.length,

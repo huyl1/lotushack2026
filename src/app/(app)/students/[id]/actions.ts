@@ -65,7 +65,7 @@ export async function addSnapshot(
 
   const rowForEmbed = enrichRowWithLeftOvertime({
     ...data,
-    id: state.id,
+    id: state.id as string,
     student_id: studentId,
     name: student?.name ?? null,
     grade: data.grade ?? student?.grade ?? null,
@@ -80,7 +80,7 @@ export async function addSnapshot(
       .update({
         student_embedding: embeddingToPgVector(embedding),
       })
-      .eq("id", state.id);
+      .eq("id", state.id as string);
 
     if (embedUpdateError) {
       throw new Error(embedUpdateError.message);

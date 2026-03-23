@@ -128,14 +128,14 @@ function GuestMeetingSession({ meetingId }: { meetingId: string }) {
         setError("Meeting not found");
         return;
       }
-      setMeeting(data as Meeting);
+      setMeeting(data as unknown as Meeting);
 
       const { data: rows } = await supabase
         .from("meeting_utterances")
         .select("*")
         .eq("meeting_id", meetingId)
         .order("created_at", { ascending: true });
-      if (rows) setUtterances(rows as MeetingUtterance[]);
+      if (rows) setUtterances(rows as unknown as MeetingUtterance[]);
     })();
     return () => {
       cancelled = true;

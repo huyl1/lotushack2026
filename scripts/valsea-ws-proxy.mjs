@@ -8,16 +8,16 @@
  *
  * Env (all optional except VALSEA_API_KEY):
  *   VALSEA_UPSTREAM      — upstream WSS URL (default: wss://api.valsea.app/v1/realtime)
- *   VALSEA_PROXY_HOST    — bind address (default: 127.0.0.1)
- *   VALSEA_PROXY_PORT    — listen port (default: 8765)
+ *   VALSEA_PROXY_HOST    — bind address (default: 127.0.0.1 locally, 0.0.0.0 on Railway)
+ *   PORT                 — listen port (Railway sets this; overrides VALSEA_PROXY_PORT)
+ *   VALSEA_PROXY_PORT    — listen port when PORT unset (default: 8765)
  *   VALSEA_API_KEY       — dashboard API key (vl_...); can live in .env.development.local
  *
  * Docs: https://valsea.app/docs/realtime
  */
 
 import nextEnv from "@next/env";
-import { WebSocketServer } from "ws";
-import WebSocket from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 
 const { loadEnvConfig } = nextEnv;
 // Same file order as Next.js: .env.development.local overrides .env when not production
@@ -25,8 +25,10 @@ loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
 
 const UPSTREAM =
   process.env.VALSEA_UPSTREAM ?? "wss://api.valsea.app/v1/realtime";
-const HOST = process.env.VALSEA_PROXY_HOST ?? "127.0.0.1";
-const PORT = Number(process.env.VALSEA_PROXY_PORT ?? 8765);
+const isRailway = Boolean(process.env.RAILWAY_ENVIRONMENT);
+const HOST =
+  process.env.VALSEA_PROXY_HOST ?? (isRailway ? "0.0.0.0" : "127.0.0.1");
+const PORT = Number(process.env.PORT ?? process.env.VALSEA_PROXY_PORT ?? 8765);
 const apiKey = process.env.VALSEA_API_KEY;
 
 if (!apiKey || !apiKey.startsWith("vl_")) {
@@ -50,7 +52,10 @@ wss.on("connection", (browserWs) => {
   });
 
   upstream.on("open", () => {
-    while (pendingFromBrowser.length && upstream.readyState === WebSocket.OPEN) {
+    while (
+      pendingFromBrowser.length &&
+      upstream.readyState === WebSocket.OPEN
+    ) {
       upstream.send(pendingFromBrowser.shift());
     }
   });

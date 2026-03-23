@@ -28,7 +28,7 @@ export async function getStudentsWithLatestState(): Promise<StudentWithLatestSta
   if (!students?.length) return [];
 
   // Get latest state per student + count using SQL
-  const { data: stateData } = await supabase.rpc("get_latest_states_with_counts").select("*");
+  const { data: stateData } = await supabase.rpc("get_latest_states_with_counts");
 
   // Fallback if RPC doesn't exist — use JS grouping
   if (!stateData) {
@@ -38,13 +38,13 @@ export async function getStudentsWithLatestState(): Promise<StudentWithLatestSta
       .order("created_at", { ascending: false });
 
     const statesByStudent = new Map<string, StudentState[]>();
-    for (const s of (allStates ?? []) as StudentState[]) {
+    for (const s of (allStates ?? []) as unknown as StudentState[]) {
       const arr = statesByStudent.get(s.student_id) ?? [];
       arr.push(s);
       statesByStudent.set(s.student_id, arr);
     }
 
-    return (students as Student[]).map((student) => {
+    return (students as unknown as Student[]).map((student) => {
       const studentStates = statesByStudent.get(student.id) ?? [];
       return {
         ...student,
@@ -56,10 +56,15 @@ export async function getStudentsWithLatestState(): Promise<StudentWithLatestSta
 
   const latestMap = new Map<string, { state: StudentState; count: number }>();
   for (const row of stateData) {
-    latestMap.set(row.student_id, { state: row as StudentState, count: row.state_count });
+    const sid = row.student_id as string;
+    const sc = row.state_count as number;
+    latestMap.set(sid, {
+      state: row as unknown as StudentState,
+      count: sc,
+    });
   }
 
-  return (students as Student[]).map((student) => {
+  return (students as unknown as Student[]).map((student) => {
     const entry = latestMap.get(student.id);
     return {
       ...student,
@@ -79,8 +84,9 @@ export async function getDashboardStats() {
     .neq("stage", "archived");
 
   const counts: Record<string, number> = {};
-  for (const row of (stageCounts ?? [])) {
-    counts[row.stage] = (counts[row.stage] ?? 0) + 1;
+  for (const row of stageCounts ?? []) {
+    const stage = String(row.stage);
+    counts[stage] = (counts[stage] ?? 0) + 1;
   }
 
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
@@ -97,7 +103,7 @@ export async function getDashboardStats() {
 
   let needsAttention = 0;
   if (activeStudents?.length) {
-    const studentIds = activeStudents.map((s: { id: string }) => s.id);
+    const studentIds = activeStudents.map((s) => s.id as string);
     const { data: latestStates } = await supabase
       .from("student_states")
       .select("student_id, created_at")
@@ -105,14 +111,16 @@ export async function getDashboardStats() {
       .order("created_at", { ascending: false });
 
     const latestByStudent = new Map<string, string>();
-    for (const s of (latestStates ?? [])) {
-      if (!latestByStudent.has(s.student_id)) {
-        latestByStudent.set(s.student_id, s.created_at);
+    for (const s of latestStates ?? []) {
+      const sid = s.student_id as string;
+      if (!latestByStudent.has(sid)) {
+        latestByStudent.set(sid, s.created_at as string);
       }
     }
 
     for (const student of activeStudents) {
-      const latestDate = latestByStudent.get(student.id) ?? student.created_at;
+      const sid = student.id as string;
+      const latestDate = latestByStudent.get(sid) ?? (student.created_at as string);
       if (new Date(latestDate).getTime() < Date.now() - 14 * 24 * 60 * 60 * 1000) {
         needsAttention++;
       }
@@ -157,17 +165,17 @@ export async function getStudentDetail(
       .eq("student_id", studentId),
   ]);
 
-  const states = (statesResult.data ?? []) as StudentState[];
+  const states = (statesResult.data ?? []) as unknown as StudentState[];
 
   // Fetch tags if there are any student_tags
   let tags: Tag[] = [];
   if (tagsResult.data?.length) {
-    const tagIds = tagsResult.data.map((st: { tag_id: string }) => st.tag_id);
+    const tagIds = tagsResult.data.map((st) => st.tag_id as string);
     const { data: tagData } = await supabase
       .from("tags")
       .select("*")
       .in("id", tagIds);
-    tags = (tagData ?? []) as Tag[];
+    tags = (tagData ?? []) as unknown as Tag[];
   }
 
   // Find which states have recommendations (inference runs)
@@ -184,7 +192,8 @@ export async function getStudentDetail(
       // Count recs per state
       const countMap = new Map<string, number>();
       for (const r of recCounts) {
-        countMap.set(r.student_state_id, (countMap.get(r.student_state_id) ?? 0) + 1);
+        const rsid = r.student_state_id as string;
+        countMap.set(rsid, (countMap.get(rsid) ?? 0) + 1);
       }
 
       // Build inference run entries from states that have recs
@@ -207,7 +216,7 @@ export async function getStudentDetail(
   }
 
   return {
-    ...(student as Student),
+    ...(student as unknown as Student),
     states,
     inference_runs: inferenceRuns,
     tags,
@@ -236,9 +245,10 @@ export async function getRecommendationsForState(
     .select("*")
     .eq("student_state_id", stateId);
 
-  if (!recData?.length) return { state: state as StudentState, recommendations: [] };
+  if (!recData?.length)
+    return { state: state as unknown as StudentState, recommendations: [] };
 
-  const majorIds = recData.map((r: { major_id: string }) => r.major_id);
+  const majorIds = recData.map((r) => r.major_id as string);
   const { data: majors } = await supabase
     .from("majors")
     .select("*")
@@ -246,7 +256,7 @@ export async function getRecommendationsForState(
 
   const majorsMap = new Map<string, Major>();
   const universityIds = new Set<string>();
-  for (const m of (majors ?? []) as Major[]) {
+  for (const m of (majors ?? []) as unknown as Major[]) {
     majorsMap.set(m.id, m);
     universityIds.add(m.university_id);
   }
@@ -257,11 +267,11 @@ export async function getRecommendationsForState(
     .in("id", Array.from(universityIds));
 
   const uniMap = new Map<string, University>();
-  for (const u of (universities ?? []) as University[]) {
+  for (const u of (universities ?? []) as unknown as University[]) {
     uniMap.set(u.id, u);
   }
 
-  const recommendations = (recData as Recommendation[]).map((rec) => {
+  const recommendations = (recData as unknown as Recommendation[]).map((rec) => {
     const major = majorsMap.get(rec.major_id);
     return {
       ...rec,
@@ -270,5 +280,5 @@ export async function getRecommendationsForState(
     };
   });
 
-  return { state: state as StudentState, recommendations };
+  return { state: state as unknown as StudentState, recommendations };
 }

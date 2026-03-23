@@ -29,6 +29,7 @@ Path alias: `@/*` maps to `./src/*`
 - `npm run build` — Production build
 - `npm run start` — Start production server
 - `npm run lint` — Run ESLint
+- **Railway** — See [`RAILWAY.md`](./RAILWAY.md) for two-service setup (Next.js + `Dockerfile.valsea` proxy). `yarn start:valsea-proxy` runs the proxy locally.
 
 ## Environment Variables
 

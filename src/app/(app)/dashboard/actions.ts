@@ -53,7 +53,7 @@ export async function createStudent(data: {
 
     const rowForEmbed = enrichRowWithLeftOvertime({
       ...data.snapshot,
-      id: stateRow.id,
+      id: stateRow.id as string,
       student_id: student.id,
       name: data.name,
       grade: data.grade ?? null,
@@ -71,7 +71,7 @@ export async function createStudent(data: {
       .update({
         student_embedding: embeddingToPgVector(embedding),
       })
-      .eq("id", stateRow.id);
+      .eq("id", stateRow.id as string);
 
     if (embedUpdateError) {
       throw new Error(embedUpdateError.message);
@@ -79,5 +79,5 @@ export async function createStudent(data: {
   }
 
   revalidatePath("/dashboard");
-  return student.id;
+  return student.id as string;
 }

@@ -1,7 +1,7 @@
-import Link from "next/link";
+import { NewMeetingDialog } from "@/components/meeting/new-meeting-dialog";
 import { createClient } from "@/lib/supabase/server";
 import type { Meeting } from "@/lib/supabase/types";
-import { NewMeetingDialog } from "@/components/meeting/new-meeting-dialog";
+import Link from "next/link";
 
 export default async function MeetingsPage() {
   const supabase = await createClient();
@@ -14,7 +14,7 @@ export default async function MeetingsPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  const rows = (meetings ?? []) as Meeting[];
+  const rows = (meetings ?? []) as unknown as Meeting[];
 
   return (
     <div
