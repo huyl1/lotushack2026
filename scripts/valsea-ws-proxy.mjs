@@ -8,7 +8,7 @@
  *
  * Env (all optional except VALSEA_API_KEY):
  *   VALSEA_UPSTREAM      — upstream WSS URL (default: wss://api.valsea.app/v1/realtime)
- *   VALSEA_PROXY_HOST    — bind address (default: 127.0.0.1 locally, 0.0.0.0 on Railway)
+ *   VALSEA_PROXY_HOST    — bind address (default: 127.0.0.1 locally; on Railway always 0.0.0.0)
  *   PORT                 — listen port (Railway sets this; overrides VALSEA_PROXY_PORT)
  *   VALSEA_PROXY_PORT    — listen port when PORT unset (default: 8765)
  *   VALSEA_API_KEY       — dashboard API key (vl_...); can live in .env.development.local
@@ -26,8 +26,27 @@ loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
 const UPSTREAM =
   process.env.VALSEA_UPSTREAM ?? "wss://api.valsea.app/v1/realtime";
 const isRailway = Boolean(process.env.RAILWAY_ENVIRONMENT);
-const HOST =
-  process.env.VALSEA_PROXY_HOST ?? (isRailway ? "0.0.0.0" : "127.0.0.1");
+
+/** Never bind to a cloud/pod IP (EADDRNOTAVAIL). Railway routes to the container; listen on all interfaces. */
+function resolveBindHost() {
+  const explicit = process.env.VALSEA_PROXY_HOST?.trim();
+  if (isRailway) {
+    if (
+      explicit &&
+      explicit !== "0.0.0.0" &&
+      explicit !== "::" &&
+      explicit !== "[::]"
+    ) {
+      console.warn(
+        `[valsea-proxy] VALSEA_PROXY_HOST=${explicit} is ignored on Railway; binding 0.0.0.0 (do not set pod/private IPs).`,
+      );
+    }
+    return "0.0.0.0";
+  }
+  return explicit || "127.0.0.1";
+}
+
+const HOST = resolveBindHost();
 const PORT = Number(process.env.PORT ?? process.env.VALSEA_PROXY_PORT ?? 8765);
 const apiKey = process.env.VALSEA_API_KEY;
 

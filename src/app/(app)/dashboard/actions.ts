@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import {
   buildStudentEmbedText,
   embedTextsVoyage,
@@ -8,6 +7,7 @@ import {
   enrichRowWithLeftOvertime,
 } from "@/lib/embeddings/student-embedding";
 import { createAdminClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export async function createStudent(data: {
   name: string;
@@ -31,11 +31,16 @@ export async function createStudent(data: {
 
   const { data: student, error } = await supabase
     .from("students")
-    .insert({ name: data.name, grade: data.grade ?? null, dob: data.dob ?? null })
+    .insert({
+      name: data.name,
+      grade: data.grade ?? null,
+      dob: data.dob ?? null,
+    })
     .select("id")
     .single();
 
-  if (error || !student) throw new Error(error?.message ?? "Failed to create student");
+  if (error || !student)
+    throw new Error(error?.message ?? "Failed to create student");
 
   if (data.snapshot) {
     const { data: stateRow, error: stateError } = await supabase
@@ -62,7 +67,9 @@ export async function createStudent(data: {
 
     const text = buildStudentEmbedText(rowForEmbed);
     if (!text.trim()) {
-      throw new Error("Cannot embed student: no fields produced embedding text");
+      throw new Error(
+        "Cannot embed student: no fields produced embedding text",
+      );
     }
 
     const [embedding] = await embedTextsVoyage([text]);
