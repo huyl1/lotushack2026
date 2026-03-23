@@ -3,6 +3,11 @@
 # (Use Dockerfile.valsea only for the separate Valsea proxy service.)
 #
 # https://nextjs.org/docs/app/building-your-application/deploying#docker-image
+#
+# Railway maps service Variables → `docker build --build-arg` when these names
+# appear as ARG (declare before FROM + again in the builder stage).
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
@@ -18,7 +23,8 @@ COPY . .
 
 # Next.js inlines NEXT_PUBLIC_* at `next build` into the client JS bundle. They must
 # exist during this stage — setting them only at container runtime is too late.
-# Railway: add these to the web service Variables (same names as local .env).
+# Railway: add these to the *web* service Variables (same names as local .env),
+# apply/deploy so the build receives them as build-args (not only runtime).
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
@@ -26,7 +32,9 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then \
-  echo "Docker build: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Railway (web service) so next build can inline them." >&2; \
+  echo "Docker build: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are empty." >&2; \
+  echo "On Railway: open the *web* service (not Valsea) → Variables → add both with your Supabase project values → deploy." >&2; \
+  echo "If you use shared/reference variables, ensure they resolve (not blank) before build." >&2; \
   exit 1; \
 fi && npm run build
 
