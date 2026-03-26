@@ -144,6 +144,33 @@ export interface Recommendation {
 }
 
 /* ============================================================
+   Input types — used by API routes, mutations, and server actions
+   ============================================================ */
+
+export interface SnapshotInput {
+  sat_score?: number | null;
+  act_score?: number | null;
+  gpa?: number | null;
+  ielts_score?: number | null;
+  target_majors?: string[] | null;
+  preferred_countries?: string[] | null;
+  preferred_setting?: string | null;
+  preferred_size?: string | null;
+  budget_usd?: number | null;
+  needs_financial_aid?: boolean | null;
+  target_acceptance_rate_min?: number | null;
+  application_round?: string | null;
+  grade?: string | null;
+}
+
+export interface CreateStudentInput {
+  name: string;
+  grade?: string | null;
+  dob?: string | null;
+  snapshot?: Omit<SnapshotInput, "application_round" | "grade"> | null;
+}
+
+/* ============================================================
    Composite types for frontend views
    ============================================================ */
 

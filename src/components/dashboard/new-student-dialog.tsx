@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@/components/ui/dialog";
-import { createStudent } from "@/app/(app)/dashboard/actions";
+import { useCreateStudent } from "@/lib/hooks/use-student-mutations";
 
 interface NewStudentDialogProps {
   open: boolean;
@@ -148,39 +148,43 @@ export function NewStudentDialog({ open, onClose }: NewStudentDialogProps) {
   const [setting, setSetting] = useState("");
   const [size, setSize] = useState("");
 
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const createStudentMutation = useCreateStudent();
+  const isPending = createStudentMutation.isPending;
 
   const save = (withSnapshot: boolean) => {
     if (!name.trim()) { setError("Name is required"); return; }
     setError(null);
-    startTransition(async () => {
-      try {
-        const hasSnapshot = withSnapshot && (sat || act || gpa || ielts || budget || majors.length || countries.length);
-        const id = await createStudent({
-          name: name.trim(),
-          grade: grade || null,
-          dob: dob || null,
-          snapshot: hasSnapshot ? {
-            sat_score: sat ? Number(sat) : null,
-            act_score: act ? Number(act) : null,
-            gpa: gpa ? Number(gpa) : null,
-            ielts_score: ielts ? Number(ielts) : null,
-            budget_usd: budget ? Number(budget) : null,
-            needs_financial_aid: financialAid === "yes" ? true : financialAid === "no" ? false : null,
-            target_acceptance_rate_min: minAcceptance ? Number(minAcceptance) : null,
-            target_majors: majors.length ? majors : null,
-            preferred_countries: countries.length ? countries : null,
-            preferred_setting: setting || null,
-            preferred_size: size || null,
-          } : null,
-        });
-        onClose();
-        router.push(`/students/${id}`);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong");
-      }
-    });
+    const hasSnapshot = withSnapshot && (sat || act || gpa || ielts || budget || majors.length || countries.length);
+    createStudentMutation.mutate(
+      {
+        name: name.trim(),
+        grade: grade || null,
+        dob: dob || null,
+        snapshot: hasSnapshot ? {
+          sat_score: sat ? Number(sat) : null,
+          act_score: act ? Number(act) : null,
+          gpa: gpa ? Number(gpa) : null,
+          ielts_score: ielts ? Number(ielts) : null,
+          budget_usd: budget ? Number(budget) : null,
+          needs_financial_aid: financialAid === "yes" ? true : financialAid === "no" ? false : null,
+          target_acceptance_rate_min: minAcceptance ? Number(minAcceptance) : null,
+          target_majors: majors.length ? majors : null,
+          preferred_countries: countries.length ? countries : null,
+          preferred_setting: setting || null,
+          preferred_size: size || null,
+        } : null,
+      },
+      {
+        onSuccess: (data) => {
+          onClose();
+          router.push(`/students/${data.id}`);
+        },
+        onError: (e) => {
+          setError(e.message ?? "Something went wrong");
+        },
+      },
+    );
   };
 
   return (

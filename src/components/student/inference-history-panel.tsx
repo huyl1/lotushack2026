@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
-import { deleteReport } from "@/app/(app)/students/[id]/actions";
+import { useDeleteReport } from "@/lib/hooks/use-student-mutations";
 import type { InferenceRun } from "@/lib/supabase/types";
 
 interface InferenceHistoryPanelProps {
@@ -28,14 +28,16 @@ function formatScores(run: InferenceRun): string {
 
 export function InferenceHistoryPanel({ inferenceRuns, studentId }: InferenceHistoryPanelProps) {
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const deleteReportMutation = useDeleteReport(studentId);
+  const isPending = deleteReportMutation.isPending;
 
   function handleDeleteReport(stateId: string) {
-    startTransition(async () => {
-      await deleteReport(studentId, stateId);
-      setConfirmId(null);
-      router.refresh();
+    deleteReportMutation.mutate(stateId, {
+      onSuccess: () => {
+        setConfirmId(null);
+        router.refresh();
+      },
     });
   }
 

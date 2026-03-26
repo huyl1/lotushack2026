@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
-import { addSnapshot } from "@/app/(app)/students/[id]/actions";
+import { useAddSnapshot } from "@/lib/hooks/use-student-mutations";
 import type { StudentState } from "@/lib/supabase/types";
 
 interface AddSnapshotDialogProps {
@@ -160,32 +160,32 @@ export function AddSnapshotDialog({ studentId, open, onClose, lastSnapshot, curr
   const [setting, setSetting] = useState(lastSnapshot?.preferred_setting ?? "");
   const [size, setSize] = useState(lastSnapshot?.preferred_size ?? "");
 
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const addSnapshotMutation = useAddSnapshot(studentId);
+  const isPending = addSnapshotMutation.isPending;
 
   const handleSave = () => {
     setError(null);
-    startTransition(async () => {
-      try {
-        await addSnapshot(studentId, {
-          sat_score: sat ? Number(sat) : null,
-          act_score: act ? Number(act) : null,
-          gpa: gpa ? Number(gpa) : null,
-          ielts_score: ielts ? Number(ielts) : null,
-          grade: grade || null,
-          budget_usd: budget ? Number(budget) : null,
-          needs_financial_aid: financialAid === "yes" ? true : financialAid === "no" ? false : null,
-          target_acceptance_rate_min: minAcceptance ? Number(minAcceptance) : null,
-          target_majors: majors.length ? majors : null,
-          preferred_countries: countries.length ? countries : null,
-          preferred_setting: setting || null,
-          preferred_size: size || null,
-        });
-        onClose();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong");
-      }
-    });
+    addSnapshotMutation.mutate(
+      {
+        sat_score: sat ? Number(sat) : null,
+        act_score: act ? Number(act) : null,
+        gpa: gpa ? Number(gpa) : null,
+        ielts_score: ielts ? Number(ielts) : null,
+        grade: grade || null,
+        budget_usd: budget ? Number(budget) : null,
+        needs_financial_aid: financialAid === "yes" ? true : financialAid === "no" ? false : null,
+        target_acceptance_rate_min: minAcceptance ? Number(minAcceptance) : null,
+        target_majors: majors.length ? majors : null,
+        preferred_countries: countries.length ? countries : null,
+        preferred_setting: setting || null,
+        preferred_size: size || null,
+      },
+      {
+        onSuccess: () => onClose(),
+        onError: (e) => setError(e.message ?? "Something went wrong"),
+      },
+    );
   };
 
   const stepLabel = `Step ${step} of 2 — ${step === 1 ? "Scores" : "Application"}`;

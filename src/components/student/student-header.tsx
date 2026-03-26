@@ -1,64 +1,84 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageBanner } from "@/components/ui/page-banner";
 import { AddSnapshotDialog } from "./add-snapshot-dialog";
+<<<<<<< Updated upstream
 import { deleteStudent } from "@/app/(app)/students/[id]/actions";
 import type { MatchingStatus, StudentHeaderProps } from "./student.types";
 import { MATCHING_STEPS } from "./constants";
+=======
+import { useDeleteStudent, useRunMatching } from "@/lib/hooks/use-student-mutations";
+import type { StudentDetail } from "@/lib/supabase/types";
+
+type MatchingStatus = "idle" | "running" | "done" | "error";
+
+const MATCHING_STEPS = [
+  "Fetching student profile...",
+  "Filtering university candidates...",
+  "Computing semantic rankings...",
+  "Running AI scoring model...",
+  "Persisting recommendations...",
+];
+
+interface StudentHeaderProps {
+  student: StudentDetail;
+}
+>>>>>>> Stashed changes
 
 export function StudentBanner({ student }: StudentHeaderProps) {
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [matchingStatus, setMatchingStatus] = useState<MatchingStatus>("idle");
   const [matchingStep, setMatchingStep] = useState(0);
   const [matchingError, setMatchingError] = useState<string | null>(null);
+  const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const router = useRouter();
 
+  const deleteStudentMutation = useDeleteStudent();
+  const runMatchingMutation = useRunMatching();
+  const isPending = deleteStudentMutation.isPending;
+
+  useEffect(() => {
+    return () => {
+      if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+    };
+  }, []);
+
   function handleDelete() {
-    startTransition(async () => {
-      await deleteStudent(student.id);
-      router.push("/dashboard");
+    deleteStudentMutation.mutate(student.id, {
+      onSuccess: () => router.push("/dashboard"),
     });
   }
 
-  async function handleRunMatching() {
+  function handleRunMatching() {
     setMatchingStatus("running");
     setMatchingStep(0);
     setMatchingError(null);
 
-    const stepInterval = setInterval(() => {
+    if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+    stepIntervalRef.current = setInterval(() => {
       setMatchingStep((prev) => (prev < MATCHING_STEPS.length - 1 ? prev + 1 : prev));
     }, 3000);
 
-    try {
-      const res = await fetch("/api/recommendations/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: student.id }),
-      });
-
-      clearInterval(stepInterval);
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(data.error ?? `HTTP ${res.status}`);
-      }
-
-      const result = await res.json();
-      setMatchingStatus("done");
-
-      setTimeout(() => {
-        router.push(`/students/${student.id}/report/${result.studentStateId}`);
-        router.refresh();
-      }, 600);
-    } catch (err) {
-      clearInterval(stepInterval);
-      setMatchingStatus("error");
-      setMatchingError(err instanceof Error ? err.message : "Unknown error");
-    }
+    runMatchingMutation.mutate(student.id, {
+      onSuccess: (result) => {
+        if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+        stepIntervalRef.current = null;
+        setMatchingStatus("done");
+        setTimeout(() => {
+          router.push(`/students/${student.id}/report/${result.studentStateId}`);
+          router.refresh();
+        }, 600);
+      },
+      onError: (err) => {
+        if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+        stepIntervalRef.current = null;
+        setMatchingStatus("error");
+        setMatchingError(err.message ?? "Unknown error");
+      },
+    });
   }
 
   const latestStateId = student.states.length > 0

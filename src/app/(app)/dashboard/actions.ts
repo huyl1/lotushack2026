@@ -9,24 +9,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function createStudent(data: {
-  name: string;
-  grade?: string | null;
-  dob?: string | null;
-  snapshot?: {
-    sat_score?: number | null;
-    act_score?: number | null;
-    gpa?: number | null;
-    ielts_score?: number | null;
-    target_majors?: string[] | null;
-    preferred_countries?: string[] | null;
-    preferred_setting?: string | null;
-    preferred_size?: string | null;
-    budget_usd?: number | null;
-    needs_financial_aid?: boolean | null;
-    target_acceptance_rate_min?: number | null;
-  } | null;
-}) {
+export async function createStudent(data: import("@/lib/supabase/types").CreateStudentInput) {
   const supabase = createAdminClient();
 
   const { data: student, error } = await supabase
