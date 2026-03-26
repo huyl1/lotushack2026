@@ -1,14 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-
-interface PipelineStep {
-  n: string;
-  title: string;
-  desc: string;
-  tool: string;
-  image: string | null;
-}
+import type { PipelineStep } from "./landing.types";
 
 export function PipelineCarousel({ steps }: { steps: PipelineStep[] }) {
   const containerRef = useRef<HTMLDivElement>(null);

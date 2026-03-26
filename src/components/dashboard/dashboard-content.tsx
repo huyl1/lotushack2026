@@ -12,27 +12,8 @@ import { PanelActionQueue } from "./panel-action-queue";
 import { PanelStagePipeline } from "./panel-stage-pipeline";
 import { NewStudentDialog } from "./new-student-dialog";
 import { relativeTime } from "@/lib/utils/time";
-import type { StudentWithLatestState } from "@/lib/supabase/types";
-
-interface DashboardContentProps {
-  students: StudentWithLatestState[];
-  stats: {
-    total: number;
-    inProgress: number;
-    needsAttention: number;
-    readyToPresent: number;
-    stageCounts: Record<string, number>;
-  };
-}
-
-const STAGE_TABS = [
-  { key: "all", label: "All" },
-  { key: "new", label: "New" },
-  { key: "profile_building", label: "Building" },
-  { key: "matched", label: "Matched" },
-  { key: "presented", label: "Presented" },
-  { key: "decided", label: "Decided" },
-] as const;
+import type { DashboardContentProps } from "./dashboard.types";
+import { STAGE_TABS } from "./constants";
 
 type FilterKey = (typeof STAGE_TABS)[number]["key"];
 

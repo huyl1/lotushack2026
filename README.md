@@ -5,13 +5,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -47,14 +41,14 @@ Common commands:
 
 ```bash
 # Local stack (Docker required)
-npm run supabase:start
-npm run supabase:status
+yarn supabase:start
+yarn supabase:status
 
 # New migration file
-npm run supabase:migration:new -- add_profiles_table
+yarn supabase:migration:new add_profiles_table
 
 # Apply migrations to local DB and run seed
-npm run supabase:db:reset
+yarn supabase:db:reset
 ```
 
 Link this folder to your hosted project (one-time): `supabase login` then `supabase link --project-ref <ref>`. Push migrations to production: `supabase db push`.

@@ -3,8 +3,8 @@
  * Browsers cannot set Authorization headers on WebSocket handshakes, so this
  * forwards messages to the VALSEA realtime WebSocket with your API key.
  *
- * Usage: npm run demo:valsea-proxy  (from repo root; loads .env.development.local)
- *        or VALSEA_API_KEY=vl_... npm run demo:valsea-proxy
+ * Usage: yarn demo:valsea-proxy  (from repo root; loads .env.development.local)
+ *        or VALSEA_API_KEY=vl_... yarn demo:valsea-proxy
  *
  * Env (all optional except VALSEA_API_KEY):
  *   VALSEA_UPSTREAM      — upstream WSS URL (default: wss://api.valsea.app/v1/realtime)
@@ -54,7 +54,7 @@ if (!apiKey || !apiKey.startsWith("vl_")) {
   console.error(
     "Missing VALSEA_API_KEY (must start with vl_). Add it to .env.development.local " +
       "in the repo root, or run:\n" +
-      "  VALSEA_API_KEY=vl_xxx npm run demo:valsea-proxy",
+      "  VALSEA_API_KEY=vl_xxx yarn demo:valsea-proxy",
   );
   process.exit(1);
 }

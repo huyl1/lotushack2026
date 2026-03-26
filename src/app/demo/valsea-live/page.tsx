@@ -3,78 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const TARGET_RATE = 16000;
-const FLUSH_MS = 100;
-
-const LANGUAGES = [
-  { value: "english", label: "English" },
-  { value: "singlish", label: "Singlish" },
-  { value: "chinese", label: "Chinese" },
-  { value: "vietnamese", label: "Vietnamese" },
-  { value: "thai", label: "Thai" },
-  { value: "indonesian", label: "Indonesian" },
-  { value: "malay", label: "Malay" },
-  { value: "filipino", label: "Filipino" },
-  { value: "tamil", label: "Tamil" },
-  { value: "khmer", label: "Khmer" },
-] as const;
-
-function downsampleBuffer(
-  buffer: Float32Array,
-  inputSampleRate: number,
-  outputSampleRate: number,
-): Float32Array {
-  if (inputSampleRate === outputSampleRate) return buffer;
-  const sampleRateRatio = inputSampleRate / outputSampleRate;
-  const newLength = Math.round(buffer.length / sampleRateRatio);
-  const result = new Float32Array(newLength);
-  let offsetResult = 0;
-  let offsetBuffer = 0;
-  while (offsetResult < result.length) {
-    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-    let sum = 0;
-    let count = 0;
-    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
-      sum += buffer[i]!;
-      count++;
-    }
-    result[offsetResult] = count ? sum / count : 0;
-    offsetResult++;
-    offsetBuffer = nextOffsetBuffer;
-  }
-  return result;
-}
-
-function floatTo16BitPCM(input: Float32Array): Int16Array {
-  const output = new Int16Array(input.length);
-  for (let i = 0; i < input.length; i++) {
-    const s = Math.max(-1, Math.min(1, input[i]!));
-    output[i] = s < 0 ? Math.round(s * 0x8000) : Math.round(s * 0x7fff);
-  }
-  return output;
-}
-
-function int16ToBase64(samples: Int16Array): string {
-  const b = new Uint8Array(
-    samples.buffer,
-    samples.byteOffset,
-    samples.byteLength,
-  );
-  let binary = "";
-  for (let i = 0; i < b.length; i++) binary += String.fromCharCode(b[i]!);
-  return btoa(binary);
-}
-
-function getProxyUrl(): string {
-  if (typeof window === "undefined") return "";
-  const fromEnv = process.env.NEXT_PUBLIC_VALSEA_WS_PROXY;
-  if (fromEnv) return fromEnv;
-  const { protocol, hostname } = window.location;
-  const isLocal =
-    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-  if (isLocal) return "ws://127.0.0.1:8765";
-  return `${protocol === "https:" ? "wss:" : "ws:"}//${hostname}:8765`;
-}
+import {
+  VALSEA_TARGET_SAMPLE_RATE,
+  VALSEA_FLUSH_MS,
+  downsampleBuffer,
+  floatTo16BitPCM,
+  int16ToBase64,
+  getValseaProxyUrl,
+} from "@/lib/utils/audio";
+import { LANGUAGES } from "./constants";
 
 export default function ValseaLiveDemoPage() {
   const [language, setLanguage] =
@@ -206,7 +143,7 @@ export default function ValseaLiveDemoPage() {
       const down = downsampleBuffer(
         mono,
         audioContext.sampleRate,
-        TARGET_RATE,
+        VALSEA_TARGET_SAMPLE_RATE,
       );
       const pcm = floatTo16BitPCM(down);
       pcmQueueRef.current.push(pcm);
@@ -217,7 +154,7 @@ export default function ValseaLiveDemoPage() {
     processor.connect(mute);
     mute.connect(audioContext.destination);
 
-    flushTimerRef.current = setInterval(flushAudio, FLUSH_MS);
+    flushTimerRef.current = setInterval(flushAudio, VALSEA_FLUSH_MS);
     setIsRecording(true);
   }, [flushAudio, sessionReady]);
 
@@ -228,7 +165,7 @@ export default function ValseaLiveDemoPage() {
     setSessionReady(false);
     disconnect();
 
-    const url = getProxyUrl();
+    const url = getValseaProxyUrl();
     if (!url) {
       setError("Could not determine WebSocket URL.");
       return;
@@ -335,9 +272,9 @@ export default function ValseaLiveDemoPage() {
             1. Start the proxy (separate terminal)
           </h2>
           <pre className="overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-            {`npm run demo:valsea-proxy
+            {`yarn demo:valsea-proxy
 # (loads VALSEA_API_KEY from .env.development.local in repo root)
-# or: VALSEA_API_KEY=vl_your_key npm run demo:valsea-proxy`}
+# or: VALSEA_API_KEY=vl_your_key yarn demo:valsea-proxy`}
           </pre>
           <p className="mt-2 text-xs text-zinc-500">
             Optional:{" "}

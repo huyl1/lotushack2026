@@ -13,8 +13,8 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -36,7 +36,7 @@ RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KE
   echo "On Railway: open the *web* service (not Valsea) → Variables → add both with your Supabase project values → deploy." >&2; \
   echo "If you use shared/reference variables, ensure they resolve (not blank) before build." >&2; \
   exit 1; \
-fi && npm run build
+fi && yarn build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

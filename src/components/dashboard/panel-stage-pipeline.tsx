@@ -3,60 +3,9 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Panel } from "@/components/ui/panel";
-import type { StudentStage } from "@/lib/supabase/types";
-
-interface PanelStagePipelineProps {
-  stageCounts: Record<string, number>;
-  total: number;
-}
-
-const STAGES: { key: StudentStage; label: string; color: string }[] = [
-  { key: "new", label: "New", color: "#6366f1" },
-  { key: "profile_building", label: "Building", color: "#f59e0b" },
-  { key: "matched", label: "Matched", color: "#10b981" },
-  { key: "presented", label: "Presented", color: "#8b5cf6" },
-  { key: "decided", label: "Decided", color: "#06b6d4" },
-];
-
-const TOOLTIP_STYLE = {
-  background: "#ffffff",
-  border: "1px solid #e2e0d9",
-  borderRadius: 8,
-  fontSize: 14,
-  fontFamily: "var(--font-sans)",
-  color: "#1a1a1a",
-  padding: "6px 10px",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderLabel(props: any) {
-  const cx = Number(props.cx ?? 0);
-  const cy = Number(props.cy ?? 0);
-  const midAngle = Number(props.midAngle ?? 0);
-  const outerRadius = Number(props.outerRadius ?? 0);
-  const value = Number(props.value ?? 0);
-
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius + 16;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="#6b6560"
-      textAnchor={x > cx ? "start" : "end"}
-      dominantBaseline="central"
-      fontSize={11}
-      fontFamily="var(--font-mono)"
-      fontWeight={500}
-    >
-      {value}
-    </text>
-  );
-}
+import type { PanelStagePipelineProps } from "./dashboard.types";
+import { STAGES, TOOLTIP_STYLE } from "./constants";
+import { renderPieLabel } from "./utils";
 
 export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelineProps) {
 
@@ -106,7 +55,7 @@ export function PanelStagePipeline({ stageCounts, total }: PanelStagePipelinePro
               dataKey="value"
               strokeWidth={2}
               stroke="#ffffff"
-              label={renderLabel}
+              label={renderPieLabel}
               labelLine={false}
             >
               {data.map((entry, index) => (

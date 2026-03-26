@@ -22,13 +22,13 @@ Path alias: `@/*` maps to `./src/*`
 
 ## Commands
 
-- `npm run dev` — Start dev server
-- `npm run supabase:start` / `supabase:stop` / `supabase:status` — Local Supabase (Docker)
-- `npm run supabase:migration:new -- <name>` — New SQL migration under `supabase/migrations/`
-- `npm run supabase:db:reset` — Apply migrations + `supabase/seed.sql` to local DB
-- `npm run build` — Production build
-- `npm run start` — Start production server
-- `npm run lint` — Run ESLint
+- `yarn dev` — Start dev server
+- `yarn supabase:start` / `supabase:stop` / `supabase:status` — Local Supabase (Docker)
+- `yarn supabase:migration:new <name>` — New SQL migration under `supabase/migrations/`
+- `yarn supabase:db:reset` — Apply migrations + `supabase/seed.sql` to local DB
+- `yarn build` — Production build
+- `yarn start` — Start production server
+- `yarn lint` — Run ESLint
 - **Railway** — See [`RAILWAY.md`](./RAILWAY.md) for two-service setup (Next.js + `Dockerfile.valsea` proxy). `yarn start:valsea-proxy` runs the proxy locally.
 
 ## Environment Variables
@@ -46,3 +46,8 @@ See `.env.example` for required variables:
 - Use Radix UI Themes components for UI; Tailwind for custom styling
 - Prefer Server Components by default; use `"use client"` only when needed
 - Follow Next.js App Router conventions for routing, layouts, and data fetching
+- Minimize `useEffect` usage — prefer Server Components, Server Actions, or event handlers. Only use `useEffect` for synchronizing with external systems (subscriptions, DOM measurements, third-party libs)
+- Types go in colocated `.types.ts` files (e.g., `meetings.types.ts` next to `meetings/page.tsx`)
+- Constants go in colocated `constants.ts` files
+- Utility functions go in colocated `utils.ts` files
+- One component per file — name the file after the component

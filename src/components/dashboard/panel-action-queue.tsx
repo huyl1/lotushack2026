@@ -5,25 +5,16 @@ import Link from "next/link";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { relativeTime } from "@/lib/utils/time";
-import type { StudentWithLatestState, StudentStage } from "@/lib/supabase/types";
-
-interface PanelActionQueueProps {
-  students: StudentWithLatestState[];
-}
-
-const TABS: { key: StudentStage; label: string; action: string }[] = [
-  { key: "new", label: "New", action: "Start Profile" },
-  { key: "profile_building", label: "Building", action: "Complete Profile" },
-  { key: "matched", label: "Matched", action: "Present" },
-  { key: "presented", label: "Presented", action: "Follow Up" },
-];
+import type { StudentStage, StudentWithLatestState } from "@/lib/supabase/types";
+import type { PanelActionQueueProps } from "./dashboard.types";
+import { ACTION_TABS } from "./constants";
 
 export function PanelActionQueue({ students }: PanelActionQueueProps) {
   const [activeStage, setActiveStage] = useState<StudentStage>("new");
 
   const grouped = useMemo(() => {
     const map: Record<string, StudentWithLatestState[]> = {};
-    for (const tab of TABS) {
+    for (const tab of ACTION_TABS) {
       map[tab.key] = students
         .filter((s) => s.stage === tab.key)
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -32,16 +23,16 @@ export function PanelActionQueue({ students }: PanelActionQueueProps) {
   }, [students]);
 
   const items = grouped[activeStage] ?? [];
-  const activeTab = TABS.find((t) => t.key === activeStage)!;
+  const activeTab = ACTION_TABS.find((t) => t.key === activeStage)!;
 
   return (
     <Panel
       title="Action Queue"
       dotColor="var(--color-warning)"
-      tabs={TABS.map((t) => `${t.label} ${grouped[t.key]?.length ?? 0}`)}
+      tabs={ACTION_TABS.map((t) => `${t.label} ${grouped[t.key]?.length ?? 0}`)}
       activeTab={`${activeTab.label} ${items.length}`}
       onTabChange={(label) => {
-        const found = TABS.find((t) => `${t.label} ${grouped[t.key]?.length ?? 0}` === label);
+        const found = ACTION_TABS.find((t) => `${t.label} ${grouped[t.key]?.length ?? 0}` === label);
         if (found) setActiveStage(found.key);
       }}
     >

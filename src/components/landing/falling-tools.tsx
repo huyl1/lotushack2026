@@ -2,13 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Matter from "matter-js";
-
-interface Tool {
-  name: string;
-  role: string;
-  logo: string;
-  url: string;
-}
+import type { Tool } from "./landing.types";
 
 export function FallingTools({ tools }: { tools: Tool[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
