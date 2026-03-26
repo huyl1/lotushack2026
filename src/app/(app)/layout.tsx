@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/shell/sidebar";
 import { TopBar } from "@/components/shell/topbar";
 import { BreadcrumbProvider } from "@/lib/context/breadcrumb";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 export default function AppLayout({
   children,
@@ -8,6 +9,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
+    <QueryProvider>
     <BreadcrumbProvider>
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
@@ -22,5 +24,6 @@ export default function AppLayout({
       </div>
     </div>
     </BreadcrumbProvider>
+    </QueryProvider>
   );
 }

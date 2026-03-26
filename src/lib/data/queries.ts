@@ -77,11 +77,16 @@ export async function getStudentsWithLatestState(): Promise<StudentWithLatestSta
 export async function getDashboardStats() {
   const supabase = createAdminClient();
 
-  // Use SQL aggregation instead of fetching all rows and counting in JS
-  const { data: stageCounts } = await supabase
-    .from("students")
-    .select("stage")
-    .neq("stage", "archived");
+  const [{ data: stageCounts }, { data: activeStudents }] = await Promise.all([
+    supabase
+      .from("students")
+      .select("stage")
+      .neq("stage", "archived"),
+    supabase
+      .from("students")
+      .select("id, stage, created_at")
+      .not("stage", "in", '("decided","archived")'),
+  ]);
 
   const counts: Record<string, number> = {};
   for (const row of stageCounts ?? []) {
@@ -92,14 +97,6 @@ export async function getDashboardStats() {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const inProgress = (counts["profile_building"] ?? 0) + (counts["matched"] ?? 0);
   const readyToPresent = counts["matched"] ?? 0;
-
-  // More accurate stale count needs to check latest state timestamp,
-  // which requires a subquery. For now use the stage-based count as approximation
-  // and refine with actual state check:
-  const { data: activeStudents } = await supabase
-    .from("students")
-    .select("id, stage, created_at")
-    .not("stage", "in", '("decided","archived")');
 
   let needsAttention = 0;
   if (activeStudents?.length) {

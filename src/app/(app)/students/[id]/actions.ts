@@ -11,21 +11,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function addSnapshot(
   studentId: string,
-  data: {
-    sat_score?: number | null;
-    act_score?: number | null;
-    gpa?: number | null;
-    ielts_score?: number | null;
-    target_majors?: string[] | null;
-    preferred_countries?: string[] | null;
-    preferred_setting?: string | null;
-    preferred_size?: string | null;
-    budget_usd?: number | null;
-    needs_financial_aid?: boolean | null;
-    target_acceptance_rate_min?: number | null;
-    application_round?: string | null;
-    grade?: string | null;
-  }
+  data: import("@/lib/supabase/types").SnapshotInput,
 ) {
   const supabase = createAdminClient();
 
@@ -51,17 +37,13 @@ export async function addSnapshot(
 
   if (stateError || !state) throw new Error(stateError?.message ?? "Failed to create snapshot");
 
-  // Update grade on the student record if provided
-  if (data.grade !== undefined) {
-    await supabase.from("students").update({ grade: data.grade }).eq("id", studentId);
-  }
-
-  // Fetch student name + grade for embedding
-  const { data: student } = await supabase
-    .from("students")
-    .select("name, grade")
-    .eq("id", studentId)
-    .single();
+  // Update grade + fetch student name in parallel
+  const [, { data: student }] = await Promise.all([
+    data.grade !== undefined
+      ? supabase.from("students").update({ grade: data.grade }).eq("id", studentId)
+      : Promise.resolve(null),
+    supabase.from("students").select("name, grade").eq("id", studentId).single(),
+  ]);
 
   const rowForEmbed = enrichRowWithLeftOvertime({
     ...data,
