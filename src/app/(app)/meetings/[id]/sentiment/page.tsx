@@ -20,12 +20,7 @@ import type {
   MeetingSentiment,
   MeetingUtterance,
 } from "@/lib/supabase/types";
-
-const SENTIMENT_COLOR: Record<string, string> = {
-  positive: "#10b981",
-  neutral: "#a1a1aa",
-  negative: "#ef4444",
-};
+import { SENTIMENT_COLOR } from "./constants";
 
 export default function MeetingSentimentDashboardPage() {
   const params = useParams();

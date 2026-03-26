@@ -5,21 +5,8 @@ import { useRouter } from "next/navigation";
 import { PageBanner } from "@/components/ui/page-banner";
 import { AddSnapshotDialog } from "./add-snapshot-dialog";
 import { deleteStudent } from "@/app/(app)/students/[id]/actions";
-import type { StudentDetail } from "@/lib/supabase/types";
-
-type MatchingStatus = "idle" | "running" | "done" | "error";
-
-const MATCHING_STEPS = [
-  "Fetching student profile...",
-  "Filtering university candidates...",
-  "Computing semantic rankings...",
-  "Running AI scoring model...",
-  "Persisting recommendations...",
-];
-
-interface StudentHeaderProps {
-  student: StudentDetail;
-}
+import type { MatchingStatus, StudentHeaderProps } from "./student.types";
+import { MATCHING_STEPS } from "./constants";
 
 export function StudentBanner({ student }: StudentHeaderProps) {
   const [snapshotOpen, setSnapshotOpen] = useState(false);

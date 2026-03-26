@@ -52,7 +52,7 @@ export function int16ToBase64(samples: Int16Array): string {
   return btoa(binary);
 }
 
-/** Browser WebSocket URL for the local VALSEA proxy (see npm run demo:valsea-proxy). */
+/** Browser WebSocket URL for the local VALSEA proxy (see yarn demo:valsea-proxy). */
 export function getValseaProxyUrl(): string {
   if (typeof window === "undefined") return "";
   const fromEnv = process.env.NEXT_PUBLIC_VALSEA_WS_PROXY;

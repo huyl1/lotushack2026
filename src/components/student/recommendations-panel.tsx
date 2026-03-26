@@ -2,34 +2,12 @@
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { Panel } from "@/components/ui/panel";
-import type { Recommendation, StudentState } from "@/lib/supabase/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { RecommendationCard } from "./recommendation-card";
-type FilterKey = "all" | Recommendation["match_category"];
-
-interface RecommendationsPanelProps {
-  recommendations: Recommendation[];
-  studentId: string;
-  basedOnState?: StudentState | null;
-  /** All states that have recommendations (for the inference selector) */
-  statesWithRecs?: {
-    id: string;
-    created_at: string;
-    sat_score: number | null;
-    gpa: number | null;
-  }[];
-  /** Callback when user selects a different inference run */
-  onStateChange?: (stateId: string) => void;
-}
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "reach", label: "Reach" },
-  { key: "match", label: "Match" },
-  { key: "safety", label: "Safety" },
-];
+import type { FilterKey, RecommendationsPanelProps } from "./student.types";
+import { FILTERS } from "./constants";
 
 function formatStateLabel(s: {
   created_at: string;

@@ -22,8 +22,7 @@ import type {
   MeetingUtterance,
 } from "@/lib/supabase/types";
 import { setLocalMicMuted } from "@/lib/utils/meeting-media";
-
-const SENTIMENT_BATCH = 3;
+import { SENTIMENT_BATCH } from "./constants";
 
 export default function HostMeetingPage() {
   const params = useParams();

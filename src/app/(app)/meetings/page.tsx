@@ -36,7 +36,7 @@ export default async function MeetingsPage() {
             Start a session and share the guest link. Live transcription uses
             VALSEA (run{" "}
             <code className="rounded bg-[var(--color-bg-muted)] px-1 py-0.5 text-xs">
-              npm run demo:valsea-proxy
+              yarn demo:valsea-proxy
             </code>{" "}
             locally).
           </p>
