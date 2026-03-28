@@ -2,56 +2,35 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMeetingDetail } from "@/lib/hooks/use-meeting-detail";
 import type {
   MeetingSentiment,
   MeetingUtterance,
 } from "@/lib/supabase/types";
 import { SENTIMENT_COLOR } from "./constants";
 
+// Dynamic import — recharts ~200KB, only loaded when chart data exists
+const SentimentLineChart = dynamic(
+  () => import("./sentiment-charts").then((m) => ({ default: m.SentimentLineChart })),
+  { ssr: false }
+);
+const SentimentBarChart = dynamic(
+  () => import("./sentiment-charts").then((m) => ({ default: m.SentimentBarChart })),
+  { ssr: false }
+);
+
 export default function MeetingSentimentDashboardPage() {
   const params = useParams();
   const meetingId = params.id as string;
   const supabase = useMemo(() => createClient(), []);
 
-  const [utterances, setUtterances] = useState<MeetingUtterance[]>([]);
-  const [sentiments, setSentiments] = useState<MeetingSentiment[]>([]);
+  // Cached via TanStack Query — shared cache with the host meeting page
+  const { utterances, sentiments, appendUtterance, appendSentiment } = useMeetingDetail(meetingId);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const { data: u } = await supabase
-        .from("meeting_utterances")
-        .select("*")
-        .eq("meeting_id", meetingId)
-        .order("created_at", { ascending: true });
-      const { data: s } = await supabase
-        .from("meeting_sentiments")
-        .select("*")
-        .eq("meeting_id", meetingId)
-        .order("created_at", { ascending: true });
-      if (cancelled) return;
-      if (u) setUtterances(u as unknown as MeetingUtterance[]);
-      if (s) setSentiments(s as unknown as MeetingSentiment[]);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [meetingId, supabase]);
-
+  // Realtime subscriptions push into TanStack Query cache
   useEffect(() => {
     const ch = supabase
       .channel(`sentiment-dash:${meetingId}`)
@@ -64,7 +43,7 @@ export default function MeetingSentimentDashboardPage() {
           filter: `meeting_id=eq.${meetingId}`,
         },
         (payload) => {
-          setSentiments((prev) => [...prev, payload.new as MeetingSentiment]);
+          appendSentiment(payload.new as MeetingSentiment);
         },
       )
       .on(
@@ -76,7 +55,7 @@ export default function MeetingSentimentDashboardPage() {
           filter: `meeting_id=eq.${meetingId}`,
         },
         (payload) => {
-          setUtterances((prev) => [...prev, payload.new as MeetingUtterance]);
+          appendUtterance(payload.new as MeetingUtterance);
         },
       )
       .subscribe();
@@ -84,7 +63,7 @@ export default function MeetingSentimentDashboardPage() {
     return () => {
       void supabase.removeChannel(ch);
     };
-  }, [meetingId, supabase]);
+  }, [meetingId, supabase, appendSentiment, appendUtterance]);
 
   const dist = sentiments.reduce(
     (acc, s) => {
@@ -131,23 +110,7 @@ export default function MeetingSentimentDashboardPage() {
           style={{ borderColor: "var(--color-border)" }}
         >
           <h2 className="text-sm font-medium">Confidence over time</h2>
-          <div className="mt-4 h-56">
-            {lineData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <LineChart data={lineData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="i" />
-                  <YAxis domain={[0, 1]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="c" stroke="#10b981" dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                No sentiment samples yet.
-              </p>
-            )}
-          </div>
+          <SentimentLineChart lineData={lineData} />
         </div>
 
         <div
@@ -155,26 +118,7 @@ export default function MeetingSentimentDashboardPage() {
           style={{ borderColor: "var(--color-border)" }}
         >
           <h2 className="text-sm font-medium">Distribution</h2>
-          <div className="mt-4 h-56">
-            {sentiments.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={distRows}>
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" name="count">
-                    {distRows.map((row) => (
-                      <Cell key={row.name} fill={row.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                No data.
-              </p>
-            )}
-          </div>
+          <SentimentBarChart distRows={distRows} hasData={sentiments.length > 0} />
         </div>
       </div>
 

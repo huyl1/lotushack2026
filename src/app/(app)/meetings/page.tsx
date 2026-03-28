@@ -1,20 +1,12 @@
-import { NewMeetingDialog } from "@/components/meeting/new-meeting-dialog";
-import { createClient } from "@/lib/supabase/server";
-import type { Meeting } from "@/lib/supabase/types";
+"use client";
+
 import Link from "next/link";
+import { NewMeetingDialog } from "@/components/meeting/new-meeting-dialog";
+import { useMeetings } from "@/lib/hooks/use-meetings";
 
-export default async function MeetingsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: meetings } = await supabase
-    .from("meetings")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const rows = (meetings ?? []) as unknown as Meeting[];
+export default function MeetingsPage() {
+  const { data: meetings, isPending } = useMeetings();
+  const rows = meetings ?? [];
 
   return (
     <div
@@ -41,7 +33,7 @@ export default async function MeetingsPage() {
             locally).
           </p>
         </div>
-        <NewMeetingDialog canCreate={Boolean(user)} />
+        <NewMeetingDialog canCreate />
       </div>
 
       <div
@@ -64,16 +56,23 @@ export default async function MeetingsPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {isPending ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i} className="border-t" style={{ borderColor: "var(--color-border)" }}>
+                  <td className="px-4 py-3"><div className="skeleton" style={{ width: "60%", height: 14 }} /></td>
+                  <td className="px-4 py-3"><div className="skeleton" style={{ width: 60, height: 14 }} /></td>
+                  <td className="px-4 py-3"><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
+                  <td className="px-4 py-3"><div className="skeleton" style={{ width: 80, height: 14 }} /></td>
+                </tr>
+              ))
+            ) : rows.length === 0 ? (
               <tr>
                 <td
                   colSpan={4}
                   className="px-4 py-8 text-center"
                   style={{ color: "var(--color-text-muted)" }}
                 >
-                  {user
-                    ? "No meetings yet. Create one to get a guest link."
-                    : "No meetings shown. Sign in to create and list your sessions."}
+                  No meetings yet. Create one to get a guest link.
                 </td>
               </tr>
             ) : (

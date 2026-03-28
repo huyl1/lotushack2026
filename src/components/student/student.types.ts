@@ -12,6 +12,7 @@ export interface RecommendationsPanelProps {
   recommendations: Recommendation[];
   studentId: string;
   basedOnState?: StudentState | null;
+  tierCounts?: Record<string, number>;
   statesWithRecs?: {
     id: string;
     created_at: string;

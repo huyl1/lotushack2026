@@ -212,6 +212,28 @@ body {
   }
 }
 
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes slide-in-right {
   from {
     opacity: 0;
@@ -262,6 +284,16 @@ body {
 
 .animate-slide-left {
   animation: slide-in-left 250ms var(--ease-out) both;
+}
+
+.animate-stagger-in {
+  opacity: 0;
+  animation: stagger-in 300ms var(--ease-out) forwards;
+  animation-delay: calc(var(--stagger, 0) * 40ms);
+}
+
+.animate-scale-fade-in {
+  animation: scale-fade-in 400ms var(--ease-out) both;
 }
 
 .animate-marquee {
@@ -356,6 +388,25 @@ body {
   font-weight: 500;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   DASHBOARD PANELS — responsive height
+   ============================================================ */
+
+/* Stacked: each panel gets its own height */
+.panels-row > * {
+  height: 340px;
+}
+
+/* Side-by-side: row itself is 340px, children fill */
+@media (min-width: 768px) {
+  .panels-row {
+    height: 340px;
+  }
+  .panels-row > * {
+    height: 100%;
+  }
 }
 
 /* ============================================================

@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { StudentBanner } from "./student-header";
 import { ProfilePanel } from "./profile-panel";
-import { ScoreTimeline } from "./score-timeline";
 import { InferenceHistoryPanel } from "./inference-history-panel";
 import { useBreadcrumb } from "@/lib/context/breadcrumb";
 import type { StudentDetail as StudentDetailType } from "@/lib/supabase/types";
+
+// Dynamic import — recharts is ~200KB, defer until visible
+const ScoreTimeline = dynamic(
+  () => import("./score-timeline").then((m) => ({ default: m.ScoreTimeline })),
+  { ssr: false }
+);
 
 interface StudentDetailProps {
   student: StudentDetailType;

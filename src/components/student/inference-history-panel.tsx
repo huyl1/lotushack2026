@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useDeleteReport } from "@/lib/hooks/use-student-mutations";
+import { useDeleteReport } from "@/lib/hooks/use-delete-report";
 import type { InferenceRun } from "@/lib/supabase/types";
 
 interface InferenceHistoryPanelProps {

@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Panel } from "@/components/ui/panel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { RecommendationCard } from "./recommendation-card";
 import type { FilterKey, RecommendationsPanelProps } from "./student.types";
 import { FILTERS } from "./constants";
@@ -28,6 +28,7 @@ export function RecommendationsPanel({
   recommendations,
   studentId,
   basedOnState,
+  tierCounts: serverCounts,
   statesWithRecs,
   onStateChange,
 }: RecommendationsPanelProps) {
@@ -49,21 +50,16 @@ export function RecommendationsPanel({
     startTransition(() => router.refresh());
   }
 
-  const recs = useMemo(() => {
-    if (filter === "all") return recommendations;
-    return recommendations.filter((r) => r.match_category === filter);
-  }, [recommendations, filter]);
+  // Recommendations are already filtered by the API when a tier is selected
+  const recs = recommendations;
 
-  const counts = useMemo(
-    () => ({
-      all: recommendations.length,
-      reach: recommendations.filter((r) => r.match_category === "reach").length,
-      match: recommendations.filter((r) => r.match_category === "match").length,
-      safety: recommendations.filter((r) => r.match_category === "safety")
-        .length,
-    }),
-    [recommendations],
-  );
+  // Use server-provided counts when available, otherwise compute locally
+  const counts = serverCounts ?? {
+    all: recommendations.length,
+    reach: recommendations.filter((r) => r.match_category === "reach").length,
+    match: recommendations.filter((r) => r.match_category === "match").length,
+    safety: recommendations.filter((r) => r.match_category === "safety").length,
+  };
 
   const filterTabs = (
     <div className="flex items-center" style={{ gap: 2 }}>

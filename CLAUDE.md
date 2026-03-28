@@ -34,6 +34,7 @@ Path alias: `@/*` maps to `./src/*`
 ## Environment Variables
 
 See `.env.example` for required variables:
+
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase client config
 - `SUPABASE_SERVICE_ROLE_KEY` — Supabase server-only key (never expose to client)
 - `OPENROUTER_API_KEY` — OpenRouter API key (server-only)
@@ -51,3 +52,37 @@ See `.env.example` for required variables:
 - Constants go in colocated `constants.ts` files
 - Utility functions go in colocated `utils.ts` files
 - One component per file — name the file after the component
+- One hook per file — name the file after the hook (e.g., `use-students.ts` for `useStudents`). Shared utilities like `fetchJSON` go in their own file (`fetch-json.ts`). Never bundle multiple hooks into a single file.
+
+## Performance Rules
+
+### Loading & Streaming
+
+- Every route segment under `app/` must have a `loading.tsx` with skeleton UI
+- Use `<Suspense>` boundaries to stream heavy data sections independently — render the shell instantly, stream data-dependent sections in
+- Use the `.skeleton` CSS class (shimmer gradient) for loading placeholders — never `animate-pulse`
+- Skeleton layouts must match the final rendered layout (same grid columns, heights) to avoid CLS
+
+### Bundle Size
+
+- Heavy libraries (`recharts`, `react-grid-layout`, `matter-js`, `motion`) must be dynamically imported via `next/dynamic` with `{ ssr: false }`
+- Dynamic import at the **consumer level** — e.g., `const PanelStagePipeline = dynamic(() => import("./panel-stage-pipeline")...)` in the parent, not inside the component itself
+- Never add `"use client"` to components that don't use hooks or browser APIs — pure UI components (badges, stat cards, empty states, section headers) stay as Server Components
+
+### Data Fetching
+
+- **Every database query must go through an API route** (`src/app/api/`) — never call Supabase directly from Server Components or `lib/data/queries.ts`. Pages and Server Components fetch data by calling internal API routes (e.g., `fetch("/api/students")`), not by importing query functions directly.
+- All filtering, sorting, and aggregation of large datasets must happen server-side in the API route — never fetch all rows and filter in the client or Server Component
+- Parallelize independent fetches with `Promise.all` — never await sequentially when requests don't depend on each other
+- Wrap fetches called from multiple `<Suspense>` boundaries in React `cache()` to deduplicate per-request
+- Data fetching happens server-side — no client-side fetching for initial page loads
+
+### Charts (Recharts)
+
+- Do NOT use `ResponsiveContainer` — it produces `width(-1) height(-1)` errors in flex/dynamic layouts
+- Instead, measure the container with `ResizeObserver` and pass explicit `width`/`height` to the chart; only render the chart once dimensions are positive
+
+### Responsive Layout
+
+- Use the `.panels-row` class for side-by-side panels that stack on mobile (defined in `globals.css`)
+- Prefer Tailwind responsive prefixes (`md:grid-cols-2`) over JS-based breakpoints

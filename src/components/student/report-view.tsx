@@ -10,6 +10,7 @@ interface ReportViewProps {
   student: Student;
   state: StudentState;
   recommendations: Recommendation[];
+  grouped?: Record<Tier, Recommendation[]>;
 }
 
 const SCORE_LABELS: { key: keyof Pick<Recommendation, "academic_alignment" | "financial_sustainability" | "student_success" | "lifestyle_culture" | "admission_chance">; descKey: keyof Pick<Recommendation, "academic_alignment_description" | "financial_sustainability_description" | "student_success_description" | "lifestyle_culture_description" | "admission_chance_description">; label: string }[] = [
@@ -99,7 +100,7 @@ function NavItem({ rec, isActive, onClick }: { rec: Recommendation; isActive: bo
   );
 }
 
-export function ReportView({ student, state, recommendations }: ReportViewProps) {
+export function ReportView({ student, state, recommendations, grouped: preGrouped }: ReportViewProps) {
   const [selectedId, setSelectedId] = useState<string>(recommendations[0]?.id ?? "");
   const [collapsedTiers, setCollapsedTiers] = useState<Set<Tier>>(new Set());
   const { setDynamicLabel } = useBreadcrumb();
@@ -109,12 +110,15 @@ export function ReportView({ student, state, recommendations }: ReportViewProps)
 
   const stateDate = new Date(state.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-  const grouped: Record<Tier, Recommendation[]> = { reach: [], match: [], safety: [] };
-  for (const rec of recommendations) {
-    grouped[rec.match_category].push(rec);
-  }
-  for (const tier of TIER_ORDER) {
-    grouped[tier].sort((a, b) => Number(b.composite_score ?? 0) - Number(a.composite_score ?? 0));
+  // Use pre-grouped data from API when available, otherwise group locally
+  const grouped: Record<Tier, Recommendation[]> = preGrouped ?? { reach: [], match: [], safety: [] };
+  if (!preGrouped) {
+    for (const rec of recommendations) {
+      grouped[rec.match_category].push(rec);
+    }
+    for (const tier of TIER_ORDER) {
+      grouped[tier].sort((a, b) => Number(b.composite_score ?? 0) - Number(a.composite_score ?? 0));
+    }
   }
 
   const selected = recommendations.find((r) => r.id === selectedId) ?? recommendations[0];

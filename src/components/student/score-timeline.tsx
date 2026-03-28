@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { useState, useRef, useEffect } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Panel } from "@/components/ui/panel";
 import type { StudentState } from "@/lib/supabase/types";
 
@@ -48,7 +48,20 @@ function getValue(s: StudentState, key: Metric): number | null {
 
 export function ScoreTimeline({ states }: ScoreTimelineProps) {
   const [metric, setMetric] = useState<Metric>("SAT");
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartSize, setChartSize] = useState<{ w: number; h: number } | null>(null);
   const m = METRICS.find((x) => x.key === metric)!;
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0]!.contentRect;
+      if (width > 0 && height > 0) setChartSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const chartData = states.map((s) => ({
     date: new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }),
@@ -78,48 +91,46 @@ export function ScoreTimeline({ states }: ScoreTimelineProps) {
       ) : (
         <div className="flex flex-col" style={{ gap: 0, height: "100%" }}>
           {/* Chart */}
-          <div style={{ flex: "0 0 45%", minHeight: 0, padding: "8px 0 4px" }}>
-            {hasData ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 4, left: -16 }}>
-                  <CartesianGrid stroke="#ece9e1" strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 11, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
-                    axisLine={{ stroke: "#c4c1b9" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={m.domain}
-                    tick={{ fontSize: 11, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={m.format}
-                    width={36}
-                  />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    formatter={(v) => [
-                      m.format(typeof v === "number" ? v : Number(v)),
-                      metric,
-                    ]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke={m.color}
-                    strokeWidth={2}
-                    dot={{ fill: m.color, r: 3, strokeWidth: 0 }}
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
-                    connectNulls
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
+          <div ref={chartRef} style={{ flex: "0 0 45%", minHeight: 0, padding: "8px 0 4px" }}>
+            {hasData && chartSize ? (
+              <LineChart data={chartData} width={chartSize.w} height={chartSize.h} margin={{ top: 4, right: 16, bottom: 4, left: -16 }}>
+                <CartesianGrid stroke="#ece9e1" strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
+                  axisLine={{ stroke: "#c4c1b9" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={m.domain}
+                  tick={{ fontSize: 11, fill: "#8a857e", fontFamily: "var(--font-mono)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={m.format}
+                  width={36}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(v) => [
+                    m.format(typeof v === "number" ? v : Number(v)),
+                    metric,
+                  ]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={m.color}
+                  strokeWidth={2}
+                  dot={{ fill: m.color, r: 3, strokeWidth: 0 }}
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                  connectNulls
+                />
+              </LineChart>
+            ) : !hasData ? (
               <div className="flex items-center justify-center h-full">
                 <span style={{ fontSize: 13, color: "var(--color-text-muted)" }}>No {metric} data</span>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Divider */}
