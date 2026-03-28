@@ -4,28 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageBanner } from "@/components/ui/page-banner";
 import { AddSnapshotDialog } from "./add-snapshot-dialog";
-<<<<<<< Updated upstream
-import { deleteStudent } from "@/app/(app)/students/[id]/actions";
+import { useDeleteStudent } from "@/lib/hooks/use-delete-student";
+import { useRunMatching } from "@/lib/hooks/use-run-matching";
 import type { MatchingStatus, StudentHeaderProps } from "./student.types";
 import { MATCHING_STEPS } from "./constants";
-=======
-import { useDeleteStudent, useRunMatching } from "@/lib/hooks/use-student-mutations";
-import type { StudentDetail } from "@/lib/supabase/types";
-
-type MatchingStatus = "idle" | "running" | "done" | "error";
-
-const MATCHING_STEPS = [
-  "Fetching student profile...",
-  "Filtering university candidates...",
-  "Computing semantic rankings...",
-  "Running AI scoring model...",
-  "Persisting recommendations...",
-];
-
-interface StudentHeaderProps {
-  student: StudentDetail;
-}
->>>>>>> Stashed changes
 
 export function StudentBanner({ student }: StudentHeaderProps) {
   const [snapshotOpen, setSnapshotOpen] = useState(false);

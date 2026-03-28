@@ -8,7 +8,7 @@ const projectDir = process.cwd();
 loadEnvConfig(projectDir, process.env.NODE_ENV !== "production");
 
 const nextConfig: NextConfig = {
-  reactCompiler: false,
+  reactCompiler: true,
   /** Required for the root `Dockerfile` (Railway / container deploy). */
   output: "standalone",
 };

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@/components/ui/dialog";
-import { useCreateStudent } from "@/lib/hooks/use-student-mutations";
+import { useCreateStudent } from "@/lib/hooks/use-create-student";
 
 interface NewStudentDialogProps {
   open: boolean;

@@ -1,14 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion } from "motion/react";
-import { PipelineCarousel } from "@/components/landing/pipeline-carousel";
-import { FallingTools } from "@/components/landing/falling-tools";
 import { GradualBlur } from "@/components/ui/gradual-blur";
-import { ShapeGrid } from "@/components/ui/shape-grid";
 import { Marquee } from "@/components/ui/marquee";
-import { NumberTicker } from "@/components/ui/number-ticker";
 import { Brain, BarChart3, Mic, Layers, ShieldCheck, Database, RefreshCw, AlertTriangle, Crosshair, GraduationCap, Wallet, Users } from "lucide-react";
+
+// Heavy components loaded lazily — matter-js (500KB), scroll animations
+const FallingTools = dynamic(
+  () => import("@/components/landing/falling-tools").then((m) => ({ default: m.FallingTools })),
+  { ssr: false }
+);
+const PipelineCarousel = dynamic(
+  () => import("@/components/landing/pipeline-carousel").then((m) => ({ default: m.PipelineCarousel })),
+  { ssr: false }
+);
+const ShapeGrid = dynamic(
+  () => import("@/components/ui/shape-grid").then((m) => ({ default: m.ShapeGrid })),
+  { ssr: false }
+);
+const NumberTicker = dynamic(
+  () => import("@/components/ui/number-ticker").then((m) => ({ default: m.NumberTicker })),
+  { ssr: false }
+);
 
 const LOGO_TOKEN = "pk_WeSKd22IT7qcdmEF7aoY0w";
 function logoUrl(domain: string) {

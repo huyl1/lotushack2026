@@ -1,49 +1,43 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Panel } from "@/components/ui/panel";
 import { StageBadge } from "@/components/ui/badges";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatCard } from "@/components/ui/stat-card";
 import { SectionHeader } from "@/components/ui/section-header";
-import { PageBanner } from "@/components/ui/page-banner";
-import { PanelActionQueue } from "./panel-action-queue";
-import { PanelStagePipeline } from "./panel-stage-pipeline";
-import { NewStudentDialog } from "./new-student-dialog";
+import { useStudents } from "@/lib/hooks/use-students";
 import { relativeTime } from "@/lib/utils/time";
-import type { DashboardContentProps } from "./dashboard.types";
 import { STAGE_TABS } from "./constants";
 
 type FilterKey = (typeof STAGE_TABS)[number]["key"];
 
+interface DashboardStudentsProps {
+  students: import("@/lib/supabase/types").StudentWithLatestState[];
+  stageCounts: Record<string, number>;
+}
 
-export function DashboardContent({ students, stats }: DashboardContentProps) {
+export function DashboardStudents({ students: initialStudents, stageCounts: initialCounts }: DashboardStudentsProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
-  const [newStudentOpen, setNewStudentOpen] = useState(false);
 
-  const filteredStudents = useMemo(() => {
-    const filtered =
-      activeFilter === "all"
-        ? students.filter((s) => s.stage !== "archived")
-        : students.filter((s) => s.stage === activeFilter);
+  // When a filter tab is clicked, fetch filtered data from the API
+  const { data, isPending } = useStudents(
+    activeFilter !== "all" ? { stage: activeFilter } : undefined
+  );
 
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [students, activeFilter]);
+  // Use API response if filter is active and data is loaded, otherwise use initial data
+  const students = activeFilter === "all"
+    ? initialStudents
+    : (isPending ? initialStudents.filter((s) => s.stage === activeFilter) : data?.students ?? []);
 
-  const activeCount = filteredStudents.length;
+  const stageCounts = data?.stageCounts ?? initialCounts;
+  const activeCount = students.length;
 
   const filterTabs = (
     <div className="flex items-center" style={{ gap: "2px" }}>
       {STAGE_TABS.map((tab) => {
         const isActive = activeFilter === tab.key;
-        const count =
-          tab.key === "all"
-            ? students.filter((s) => s.stage !== "archived").length
-            : students.filter((s) => s.stage === tab.key).length;
+        const count = stageCounts[tab.key] ?? 0;
 
         return (
           <button
@@ -72,52 +66,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
   );
 
   return (
-    <div className="flex flex-col" style={{ gap: "var(--space-md)", padding: "var(--space-md)" }}>
-      {/* Banner */}
-      <div style={{ height: 80 }}>
-      <PageBanner
-        title="How would you like to consult today?"
-        subtitle=""
-        primaryMeta={
-          <button
-            onClick={() => setNewStudentOpen(true)}
-            className="inline-flex items-center gap-2 px-4 h-9 transition-colors pointer-events-auto"
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-              color: "#ffffff",
-              border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: "var(--radius-xs)",
-              fontFamily: "var(--font-sans)",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 1v10M1 6h10" />
-            </svg>
-            New Student
-          </button>
-        }
-      />
-      </div>
-
-      {/* Stats Row */}
-      <SectionHeader title="Overview" />
-      <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--space-md)" }}>
-        <StatCard label="Total Students" value={stats.total} dotColor="var(--color-text-primary)" subtext="all active" />
-        <StatCard label="In Progress" value={stats.inProgress} dotColor="var(--color-tier-match)" subtext="building + matched" />
-        <StatCard label="Needs Attention" value={stats.needsAttention} dotColor="var(--color-warning)" subtext="no update in 2+ weeks" />
-        <StatCard label="Ready to Present" value={stats.readyToPresent} dotColor="var(--color-info)" subtext="matched students" />
-      </div>
-
-      {/* Action Queue + Pipeline */}
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", height: 340 }}>
-        <PanelActionQueue students={students} />
-        <PanelStagePipeline stageCounts={stats.stageCounts} total={stats.total} />
-      </div>
-
+    <div className="animate-fade-up">
       {/* Student Table */}
       <SectionHeader title="Students" count={activeCount} />
       <Panel
@@ -132,7 +81,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
           </span>
         }
       >
-        {filteredStudents.length === 0 ? (
+        {students.length === 0 ? (
           <div style={{ padding: "var(--space-md)" }}>
             <EmptyState
               title="No students found"
@@ -186,7 +135,7 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
               ))}
             </div>
 
-            {filteredStudents.map((student, index) => {
+            {students.map((student, index) => {
               const ls = student.latest_state;
               const latestDate = ls ? ls.created_at : student.created_at;
 
@@ -194,13 +143,14 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
                 <Link
                   key={student.id}
                   href={`/students/${student.id}`}
-                  className="grid items-center px-4 py-3 transition-colors group"
+                  className="animate-stagger-in grid items-center px-4 py-3 transition-colors group"
                   style={{
+                    "--stagger": index,
                     gridTemplateColumns: "2fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.7fr 0.6fr",
                     gap: "var(--space-sm)",
-                    borderBottom: index < filteredStudents.length - 1 ? "1px solid var(--color-border-subtle)" : "none",
+                    borderBottom: index < students.length - 1 ? "1px solid var(--color-border-subtle)" : "none",
                     textDecoration: "none",
-                  }}
+                  } as React.CSSProperties}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-hover-bg)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
@@ -247,10 +197,6 @@ export function DashboardContent({ students, stats }: DashboardContentProps) {
           </div>
         )}
       </Panel>
-
-      {newStudentOpen && (
-        <NewStudentDialog open={newStudentOpen} onClose={() => setNewStudentOpen(false)} />
-      )}
     </div>
   );
 }

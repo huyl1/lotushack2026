@@ -1,38 +1,47 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useStudents } from "@/lib/hooks/use-students";
 import { relativeTime } from "@/lib/utils/time";
 import type { StudentStage, StudentWithLatestState } from "@/lib/supabase/types";
-import type { PanelActionQueueProps } from "./dashboard.types";
 import { ACTION_TABS } from "./constants";
 
-export function PanelActionQueue({ students }: PanelActionQueueProps) {
+interface PanelActionQueueProps {
+  students: StudentWithLatestState[];
+}
+
+export function PanelActionQueue({ students: initialStudents }: PanelActionQueueProps) {
   const [activeStage, setActiveStage] = useState<StudentStage>("new");
 
-  const grouped = useMemo(() => {
-    const map: Record<string, StudentWithLatestState[]> = {};
-    for (const tab of ACTION_TABS) {
-      map[tab.key] = students
-        .filter((s) => s.stage === tab.key)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    }
-    return map;
-  }, [students]);
+  // Fetch filtered + sorted from API for the active tab
+  const { data } = useStudents({ stage: activeStage, sort: "created_at:asc" });
 
-  const items = grouped[activeStage] ?? [];
+  // Use API data when available, fall back to filtering initial data
+  const items = data?.students ?? initialStudents.filter((s) => s.stage === activeStage);
+
+  // Stage counts from any loaded API response, or compute from initial data
+  const stageCounts = data?.stageCounts ?? (() => {
+    const c: Record<string, number> = {};
+    for (const s of initialStudents) {
+      c[s.stage] = (c[s.stage] ?? 0) + 1;
+    }
+    return c;
+  })();
+
   const activeTab = ACTION_TABS.find((t) => t.key === activeStage)!;
 
   return (
     <Panel
+      className="animate-fade-up"
       title="Action Queue"
       dotColor="var(--color-warning)"
-      tabs={ACTION_TABS.map((t) => `${t.label} ${grouped[t.key]?.length ?? 0}`)}
-      activeTab={`${activeTab.label} ${items.length}`}
+      tabs={ACTION_TABS.map((t) => `${t.label} ${stageCounts[t.key] ?? 0}`)}
+      activeTab={`${activeTab.label} ${stageCounts[activeStage] ?? items.length}`}
       onTabChange={(label) => {
-        const found = ACTION_TABS.find((t) => `${t.label} ${grouped[t.key]?.length ?? 0}` === label);
+        const found = ACTION_TABS.find((t) => `${t.label} ${stageCounts[t.key] ?? 0}` === label);
         if (found) setActiveStage(found.key);
       }}
     >
@@ -43,15 +52,15 @@ export function PanelActionQueue({ students }: PanelActionQueueProps) {
         />
       ) : (
         <div className="flex flex-col">
-          {items.map((student) => {
+          {items.map((student, index) => {
             const latestDate = student.latest_state?.created_at ?? student.created_at;
 
             return (
               <Link
                 key={student.id}
                 href={`/students/${student.id}`}
-                className="flex items-center px-3 py-2.5 transition-colors"
-                style={{ gap: "var(--space-sm)", textDecoration: "none", borderBottom: "1px solid var(--color-border-subtle)" }}
+                className="animate-stagger-in flex items-center px-3 py-2.5 transition-colors"
+                style={{ "--stagger": index, gap: "var(--space-sm)", textDecoration: "none", borderBottom: "1px solid var(--color-border-subtle)" } as React.CSSProperties}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-hover-bg)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >

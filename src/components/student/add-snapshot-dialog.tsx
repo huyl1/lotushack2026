@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
-import { useAddSnapshot } from "@/lib/hooks/use-student-mutations";
+import { useAddSnapshot } from "@/lib/hooks/use-add-snapshot";
 import type { StudentState } from "@/lib/supabase/types";
 
 interface AddSnapshotDialogProps {

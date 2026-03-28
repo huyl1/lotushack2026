@@ -4,17 +4,11 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createStudent } from "@/app/(app)/dashboard/actions";
 import type { CreateStudentInput } from "@/lib/meeting/transcript-student-extraction";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { useValseaTranscription } from "@/lib/hooks/use-valsea-transcription";
 import { useWebRTC } from "@/lib/hooks/use-webrtc";
+import { useMeetingDetail } from "@/lib/hooks/use-meeting-detail";
 import { createClient } from "@/lib/supabase/client";
 import type {
   Meeting,
@@ -24,16 +18,25 @@ import type {
 import { setLocalMicMuted } from "@/lib/utils/meeting-media";
 import { SENTIMENT_BATCH } from "./constants";
 
+// Dynamic import — recharts ~200KB, only needed when sentiment data exists
+const MeetingChart = dynamic(
+  () => import("./meeting-chart").then((m) => ({ default: m.MeetingChart })),
+  { ssr: false }
+);
+
 export default function HostMeetingPage() {
   const params = useParams();
   const router = useRouter();
   const meetingId = params.id as string;
   const supabase = useMemo(() => createClient(), []);
 
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [utterances, setUtterances] = useState<MeetingUtterance[]>([]);
-  const [sentiments, setSentiments] = useState<MeetingSentiment[]>([]);
+  // Cached via TanStack Query — initial fetch + realtime mutations into cache
+  const {
+    meeting, utterances, sentiments,
+    appendUtterance, appendSentiment, updateMeeting,
+    error: loadError, isPending: loading,
+  } = useMeetingDetail(meetingId);
+
   const [hostLabel, setHostLabel] = useState("Host");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
@@ -111,44 +114,11 @@ export default function HostMeetingPage() {
   }, [webrtc.remoteStream]);
 
   useEffect(() => {
-    let cancelled = false;
     void (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (u.user?.email) setHostLabel(u.user.email.split("@")[0] ?? "Host");
     })();
-
-    void (async () => {
-      const { data, error } = await supabase
-        .from("meetings")
-        .select("*")
-        .eq("id", meetingId)
-        .maybeSingle();
-      if (cancelled) return;
-      if (error || !data) {
-        setLoadError(error?.message ?? "Meeting not found");
-        return;
-      }
-      setMeeting(data as unknown as Meeting);
-
-      const { data: urows } = await supabase
-        .from("meeting_utterances")
-        .select("*")
-        .eq("meeting_id", meetingId)
-        .order("created_at", { ascending: true });
-      if (urows) setUtterances(urows as unknown as MeetingUtterance[]);
-
-      const { data: srows } = await supabase
-        .from("meeting_sentiments")
-        .select("*")
-        .eq("meeting_id", meetingId)
-        .order("created_at", { ascending: true });
-      if (srows) setSentiments(srows as unknown as MeetingSentiment[]);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [meetingId, supabase]);
+  }, [supabase]);
 
   useEffect(() => {
     setExtractedStudent(null);
@@ -169,7 +139,7 @@ export default function HostMeetingPage() {
         },
         (payload) => {
           const row = payload.new as MeetingUtterance;
-          setUtterances((prev) => [...prev, row]);
+          appendUtterance(row);
           if (row.role === "guest") {
             guestBatchRef.current.push(row.text);
             guestTsRef.current.push(row.timestamp_ms);
@@ -201,8 +171,7 @@ export default function HostMeetingPage() {
           filter: `meeting_id=eq.${meetingId}`,
         },
         (payload) => {
-          const row = payload.new as MeetingSentiment;
-          setSentiments((prev) => [...prev, row]);
+          appendSentiment(payload.new as MeetingSentiment);
         },
       )
       .on(
@@ -214,7 +183,7 @@ export default function HostMeetingPage() {
           filter: `id=eq.${meetingId}`,
         },
         (payload) => {
-          setMeeting(payload.new as Meeting);
+          updateMeeting(payload.new as Meeting);
         },
       )
       .subscribe();
@@ -222,7 +191,7 @@ export default function HostMeetingPage() {
     return () => {
       void supabase.removeChannel(ch);
     };
-  }, [meetingId, supabase]);
+  }, [meetingId, supabase, appendUtterance, appendSentiment, updateMeeting]);
 
   async function startSession() {
     setSessionError(null);
@@ -250,7 +219,7 @@ export default function HostMeetingPage() {
         .single();
 
       if (error) throw new Error(error.message);
-      if (updated) setMeeting(updated as unknown as Meeting);
+      if (updated) updateMeeting(updated as unknown as Meeting);
 
       await transcription.start(stream);
     } catch (e) {
@@ -326,7 +295,7 @@ export default function HostMeetingPage() {
   if (loadError) {
     return (
       <div className="p-8 text-center text-red-600">
-        {loadError}
+        {loadError.message}
         <div className="mt-4">
           <Link href="/meetings" className="underline">
             Back to meetings
@@ -336,10 +305,20 @@ export default function HostMeetingPage() {
     );
   }
 
-  if (!meeting) {
+  if (loading || !meeting) {
     return (
-      <div className="p-8 text-center" style={{ color: "var(--color-text-muted)" }}>
-        Loading…
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-col" style={{ gap: 8 }}>
+            <div className="skeleton" style={{ height: 28, width: 200 }} />
+            <div className="skeleton" style={{ height: 16, width: 300 }} />
+          </div>
+          <div className="skeleton" style={{ height: 36, width: 120 }} />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="skeleton" style={{ height: 400, border: "1px solid var(--color-border)" }} />
+          <div className="skeleton" style={{ height: 400, border: "1px solid var(--color-border)" }} />
+        </div>
       </div>
     );
   }
@@ -382,16 +361,7 @@ export default function HostMeetingPage() {
         </p>
       )}
       {chartData.length > 0 ? (
-        <div className="mt-4 h-32 w-full">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="i" hide />
-              <YAxis domain={[0, 1]} width={32} />
-              <Tooltip />
-              <Line type="monotone" dataKey="c" stroke="#10b981" dot />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <MeetingChart data={chartData} />
       ) : null}
     </div>
   );
