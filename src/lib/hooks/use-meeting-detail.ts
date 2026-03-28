@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { fetchJSON } from "./fetch-json";
 import type { Meeting, MeetingUtterance, MeetingSentiment } from "@/lib/supabase/types";
 
@@ -13,7 +13,7 @@ interface MeetingDetailResponse {
 
 export function useMeetingDetail(meetingId: string) {
   const queryClient = useQueryClient();
-  const queryKey = ["meeting", meetingId];
+  const queryKey = useMemo(() => ["meeting", meetingId], [meetingId]);
 
   const query = useQuery({
     queryKey,

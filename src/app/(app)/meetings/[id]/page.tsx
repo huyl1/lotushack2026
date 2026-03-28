@@ -191,7 +191,7 @@ export default function HostMeetingPage() {
     return () => {
       void supabase.removeChannel(ch);
     };
-  }, [meetingId, supabase]);
+  }, [meetingId, supabase, appendUtterance, appendSentiment, updateMeeting]);
 
   async function startSession() {
     setSessionError(null);
